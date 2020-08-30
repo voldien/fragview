@@ -96,7 +96,7 @@ IF(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
 	ENDIF()
 	SET(FRAG_CORE_INCLUDE "${PROJECT_SOURCE_DIR}/fragengine/frag-core/include")
 	SET(FRAG_ENGINE_INCLUDE "${PROJECT_SOURCE_DIR}/fragengine/frag-engine/include")
-	ADD_SUBDIRECTORY(${PROJECT_SOURCE_DIR}/extern/repo/fragengine)
+	ADD_SUBDIRECTORY(${PROJECT_SOURCE_DIR}/extern/repo/fragengine EXCLUDE_FROM_ALL)
 ELSE()
 
 endif()
@@ -125,9 +125,6 @@ ELSE()
 
 ENDIF()
 
-#TODO add for fragengine and fragcore!
-#PKG_CHECK_MODULES(SDL2 REQUIRED sdl2)
-
 #
 FILE(GLOB SAMPLE_GLSL_FILES ${CMAKE_CURRENT_SOURCE_DIR}/samples/glsl/* )
 FILE(GLOB SAMPLE_HLSL_FILES ${CMAKE_CURRENT_SOURCE_DIR}/samples/hlsl/* )
@@ -142,8 +139,6 @@ FILE(GLOB HEADER_FILES  ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
 SET( SHADERZIP "fragview-internal-asset" )
 SET( SHADERZIPFILE "${SHADERZIP}.zip" )
 
-#SET(FRAG_CORE_INCLUDE "/usr/local/include/fragcore/")
-#SET(FRAG_ENGINE_INCLUDE "/usr/local/include/fragengine/")
 #
 ADD_EXECUTABLE(fragview ${SOURCE_FILES} ${HEADER_FILES})
 TARGET_LINK_LIBRARIES(fragview fragcore fragengine)
@@ -168,7 +163,7 @@ IF(BUILD_WITH_INSTALL)
 		ADD_DEPENDENCIES(fragview mangzip)
 		INSTALL( FILES ${CMAKE_CURRENT_SOURCE_DIR}/fragview.1.gz DESTINATION /usr/share/man/man1/)
 
-		#TOOD add spriv generating file.
+		#TODO add spriv generating file.
 
 		IF(ZIP)
 			# TODO add addition for adding support for spirv and combine multiple files
