@@ -1,0 +1,33 @@
+[Desktop Entry]
+Type=Application
+Name=FragView
+Comment=A development software for programming and viewing shaders in realtime.
+Exec=fragview
+Icon=fragview
+MimeType=application/x-fragview;application/x-text;
+GenericName=Fragment Viewer
+Name[sv]=Fragment Visare
+Name[jp]=フラグメントシェーダ
+Name[nl]=
+Comment[sv]=Ett Utvecklingsprogram för programmering and granskning av shaders i realtid
+Comment[jp]=
+comment[nl]=
+Keywords=OpenGL;Fragment;Compute;Development;
+Actions=NewGLSLShader;NewHLSLShader;NewGLSLComputeShader;NewCLComputeShader;
+Terminal=false
+
+[Desktop Action NewGLSLShader]
+Name=New GLSL Fragment Shader
+Exec=/usr/share/fragview/newshad.sh glsl-fragment
+
+[Desktop Action NewHLSLShader]
+Name=New HLSL Fragment Shader
+Exec=/usr/share/fragview/newshad.sh hlsl-fragment
+
+[Desktop Action NewGLSLComputeShader]
+Name=New GLSL Compute Shader
+Exec=/usr/share/fragview/newshad.sh glsl-compute
+
+[Desktop Action NewCLComputeShader]
+Name=New CL Compute Shader
+Exec=/usr/share/fragview/newshad.sh cl-compute
