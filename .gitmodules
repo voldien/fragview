@@ -1,0 +1,3 @@
+[submodule "fragengine"]
+	path = fragengine
+	url = https://github.com/voldien/fragengine

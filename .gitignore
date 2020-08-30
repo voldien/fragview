@@ -209,3 +209,5 @@ lint/tmp/
 
 # Android Profiling
 *.hprof
+fragengine/
+extern/
