@@ -1,26 +1,102 @@
 CMAKE_MINIMUM_REQUIRED( VERSION 3.0 )
 PROJECT(fragview)
 OPTION(FRAGVIEW_BUILD_WITH_SANITY_CHECK "" ON)
+OPTION(BUILD_WITH_COVERAGE "Enable profiling and coverage report analysis." ON)
+OPTION(BUILD_WITH_PROFILER "Enable profiling." ON)
+OPTION(BUILD_WITH_EXTERNAL_PROJECT "Enable external project build." ON)
+OPTION(BUILD_WITH_INSTALL "." ON )
+
+# Set version of the project.
+SET(VERSION_MAJOR 0)
+SET(VERSION_MINOR 1)
+SET(VERSION_REVISION 0)
+SET(VERSION_STATE a)
+SET(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}${VERSION_STATE}${VERSION_REVISION} )
+SET(PROJECT_VERSION "${VERSION}")
+ADD_DEFINITIONS(-DFV_VERSION="${VERSION}")
+
+# GCC compiler flag options.
+IF((CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX) AND NOT CMAKE_COMPILER_IS_MINGW)
+	IF (BUILD_SHARED_LIBS AND CMAKE_SIZEOF_VOID_P EQUAL 8) # -fPIC is only required
+		SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+	ENDIF()
+
+	ADD_DEFINITIONS(-Wall -w -fpermissive)
+	ADD_DEFINITIONS( -export-dynamic  -rdynamic )
+
+	IF (CMAKE_BUILD_TYPE STREQUAL "Release")
+		MESSAGE(STATUS "Compile for release.")
+		ADD_DEFINITIONS(-DNDEBUG=1)
+		ADD_DEFINITIONS(-O3)
+		SET(CMAKE_RELEASE TRUE)
+		SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -s")
+	ELSE()
+		MESSAGE(STATUS "Compile for debug.")
+		ADD_DEFINITIONS(-D_DEBUG)
+		ADD_DEFINITIONS(-g3 -O0)
+		SET(CMAKE_DEBUG TRUE)
+		ADD_DEFINITIONS(-D_GLIBCXX_ASSERTIONS)
+	ENDIF()
+
+	#
+	IF(BUILD_WITH_COVERAGE)
+		MESSAGE(STATUS "Building with coverage")
+		SET(GCC_COVERAGE_COMPILE_FLAGS "--coverage -fprofile-arcs -ftest-coverage")
+		SET(GCC_COVERAGE_LINK_FLAGS    "-lgcov")
+		SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
+		SET(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
+		SET(CMAKE_EXE_LINKER_FLAGS  "${CMAKE_EXE_LINKER_FLAGS} ${GCC_COVERAGE_LINK_FLAGS}")
+	ENDIF()
+
+	#
+	IF(BUILD_WITH_PROFILER)
+		SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pg")
+		SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
+		SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -pg")
+	ENDIF()
+
+ELSEIF(MSVC)
+	# Enable multi-core compilation with MSVC
+	ADD_COMPILE_OPTIONS(/MP)
+ELSEIF ( "${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang" )
+	IF (CMAKE_BUILD_TYPE STREQUAL "Release")
+	ELSE()
+	ENDIF()
+	SET(CMAKE_CXX_FLAGS "-g -fvisibility=hidden -fno-strict-aliasing -Wall -Wno-long-long ${CMAKE_CXX_FLAGS}" )
+	SET(CMAKE_C_FLAGS "-fno-strict-aliasing ${CMAKE_C_FLAGS}")
+ELSEIF( CMAKE_COMPILER_IS_MINGW )
+	IF (CMAKE_BUILD_TYPE STREQUAL "Release")
+	ELSE()
+	ENDIF()
+	SET(CMAKE_CXX_FLAGS "-fvisibility=hidden -fno-strict-aliasing -Wall -Wno-long-long -Wa,-mbig-obj ${CMAKE_CXX_FLAGS}")
+	SET(CMAKE_C_FLAGS "-fno-strict-aliasing ${CMAKE_C_FLAGS}")
+	ADD_DEFINITIONS( -U__STRICT_ANSI__ )
+ENDIF()
+
+# Set c++ language version required for the project.
+IF( CMAKE_COMPILER_IS_GNUCXX )
+	SET(LIBSTDC++_LIBRARIES -std=c++11)
+ENDIF( CMAKE_COMPILER_IS_GNUCXX )
 
 #OPTION(BUILD_WITH_SDL_WINDOW "Use SDL for window mangement." ON)
 
 # Find packages.
-FIND_PACKAGE(PkgConfig)
+
 find_package(Git QUIET)
 SET(FRAGENGINE_SUBMODULE_PATH ${PROJECT_SOURCE_DIR}/extern/repo/fragengine)
 IF(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
 	# Update submodules as needed
-    OPTION(GIT_SUBMODULE "Check submodules during build" ON)
-    IF(GIT_SUBMODULE)
+	OPTION(GIT_SUBMODULE "Check submodules during build" ON)
+	IF(GIT_SUBMODULE)
 		FILE(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/extern/repo/fragengine)
-        MESSAGE(STATUS "Submodule update")
-        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
-                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-                        RESULT_VARIABLE GIT_SUBMOD_RESULT)
-        IF(NOT GIT_SUBMOD_RESULT EQUAL "0")
-            MESSAGE(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
-        ENDIF()
-    ENDIF()
+		MESSAGE(STATUS "Submodule update")
+		execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+						WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+						RESULT_VARIABLE GIT_SUBMOD_RESULT)
+		IF(NOT GIT_SUBMOD_RESULT EQUAL "0")
+			MESSAGE(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+		ENDIF()
+	ENDIF()
 	SET(FRAG_CORE_INCLUDE "${PROJECT_SOURCE_DIR}/fragengine/frag-core/include")
 	SET(FRAG_ENGINE_INCLUDE "${PROJECT_SOURCE_DIR}/fragengine/frag-engine/include")
 	ADD_SUBDIRECTORY(${PROJECT_SOURCE_DIR}/extern/repo/fragengine)
@@ -29,13 +105,15 @@ ELSE()
 endif()
 
 IF(NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/repo/fragengine")
-    message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
+	MESSAGE(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 ENDIF()
-
 
 #TODO remove since fragengine will provide it.
 FIND_PROGRAM(OPENSSL openssl)
+FIND_PACKAGE(PkgConfig QUIET)
 IF(PKG_CONFIG_FOUND)
+	PKG_CHECK_MODULES(FRAGCORE fragcore) # Find fragcore.
+		PKG_CHECK_MODULES(FRAGENGINE fragengine) # Find fragengine.
 	IF(BUILD_WITH_SDL_WINDOW)
 		PKG_CHECK_MODULES(SDL2 REQUIRED sdl2)
 	ENDIF()
@@ -59,7 +137,6 @@ FILE(GLOB SAMPLE_HLSL_FILES ${CMAKE_CURRENT_SOURCE_DIR}/samples/hlsl/* )
 FILE(GLOB SAMPLE_SPIRV_FILES ${CMAKE_CURRENT_SOURCE_DIR}/samples/spirv/* )
 FILE(GLOB SAMPLE_CLC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/samples/clc/* )
 
-
 # Source files.
 FILE(GLOB SOURCE_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 FILE(GLOB HEADER_FILES  ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
@@ -68,6 +145,8 @@ FILE(GLOB HEADER_FILES  ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
 SET( SHADERZIP "fragview-internal-asset" )
 SET( SHADERZIPFILE "${SHADERZIP}.zip" )
 
+SET(FRAG_CORE_INCLUDE "/usr/local/include/fragcore/")
+SET(FRAG_ENGINE_INCLUDE "/usr/local/include/fragengine/")
 #
 ADD_EXECUTABLE(fragview ${SOURCE_FILES} ${HEADER_FILES})
 TARGET_LINK_LIBRARIES(fragview fragcore fragengine)
@@ -77,7 +156,6 @@ TARGET_COMPILE_DEFINITIONS(fragview PRIVATE FRAGVIEW_INTERNAL_ASSET_FILENAME="${
 
 FILE(GLOB SAMPLE_SHADER_GLSL_FILES ${PROJECT_SOURCE_DIR}/shaders/glsl/* )
 FILE(GLOB SAMPLE_SHADER_SPIRV_FILES ${PROJECT_SOURCE_DIR}/shaders/spriv/* )
-
 
 # Install binary program
 IF(BUILD_WITH_INSTALL)

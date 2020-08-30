@@ -2,6 +2,8 @@
 <!-- [![Actions Build Status](https://github.com/voldien/fragview/workflows/FragEngine/badge.svg?branch=master)](https://github.com/voldien/fragview/actions) -->
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![GitHub release](https://img.shields.io/github/release/voldien/fragview.svg)](https://github.com/voldien/fragview/releases)
+[![TODOs](https://badgen.net/https/api.tickgit.com/badgen/github.com/voldien/fragview)](https://www.tickgit.com/browse?repo=github.com/voldien/fragview)
+[![Language grade: C/C++](https://img.shields.io/lgtm/grade/cpp/g/voldien/fragview.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/voldien/fragview/context:cpp)
 <!-- TODO, LGMT, version  -->
 
 # Work in Progress
