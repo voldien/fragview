@@ -78,11 +78,8 @@ IF( CMAKE_COMPILER_IS_GNUCXX )
 	SET(LIBSTDC++_LIBRARIES -std=c++11)
 ENDIF( CMAKE_COMPILER_IS_GNUCXX )
 
-#OPTION(BUILD_WITH_SDL_WINDOW "Use SDL for window mangement." ON)
-
 # Find packages.
-
-find_package(Git QUIET)
+FIND_PACKAGE(Git QUIET)
 SET(FRAGENGINE_SUBMODULE_PATH ${PROJECT_SOURCE_DIR}/extern/repo/fragengine)
 IF(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
 	# Update submodules as needed
@@ -90,7 +87,7 @@ IF(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
 	IF(GIT_SUBMODULE)
 		FILE(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/extern/repo/fragengine)
 		MESSAGE(STATUS "Submodule update")
-		execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+		EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
 						WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 						RESULT_VARIABLE GIT_SUBMOD_RESULT)
 		IF(NOT GIT_SUBMOD_RESULT EQUAL "0")
@@ -145,8 +142,8 @@ FILE(GLOB HEADER_FILES  ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
 SET( SHADERZIP "fragview-internal-asset" )
 SET( SHADERZIPFILE "${SHADERZIP}.zip" )
 
-SET(FRAG_CORE_INCLUDE "/usr/local/include/fragcore/")
-SET(FRAG_ENGINE_INCLUDE "/usr/local/include/fragengine/")
+#SET(FRAG_CORE_INCLUDE "/usr/local/include/fragcore/")
+#SET(FRAG_ENGINE_INCLUDE "/usr/local/include/fragengine/")
 #
 ADD_EXECUTABLE(fragview ${SOURCE_FILES} ${HEADER_FILES})
 TARGET_LINK_LIBRARIES(fragview fragcore fragengine)

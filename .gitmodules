@@ -1,3 +1,6 @@
 [submodule "fragengine"]
 	path = fragengine
 	url = https://github.com/voldien/fragengine
+[submodule "extern/repo/fragengine"]
+	path = extern/repo/fragengine
+	url = https://github.com/voldien/fragengine
