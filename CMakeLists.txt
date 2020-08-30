@@ -4,23 +4,51 @@ OPTION(FRAGVIEW_BUILD_WITH_SANITY_CHECK "" ON)
 
 #OPTION(BUILD_WITH_SDL_WINDOW "Use SDL for window mangement." ON)
 
-# # Find packages.
-# FIND_PACKAGE(PkgConfig)
-# FIND_PROGRAM(OPENSSL openssl)
-# IF(PKG_CONFIG_FOUND)
-# 	IF(BUILD_WITH_SDL_WINDOW)
-# 		PKG_CHECK_MODULES(SDL2 REQUIRED sdl2)
-# 	ENDIF()
-# ELSE()
-# 	MESSAGE(WARNING "Could not find pgk-config, attempting default values.")
-# 	#TODO default values for SDL2
-# ENDIF()
+# Find packages.
+FIND_PACKAGE(PkgConfig)
+find_package(Git QUIET)
+SET(FRAGENGINE_SUBMODULE_PATH ${PROJECT_SOURCE_DIR}/extern/repo/fragengine)
+IF(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
+	# Update submodules as needed
+    OPTION(GIT_SUBMODULE "Check submodules during build" ON)
+    IF(GIT_SUBMODULE)
+		FILE(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/extern/repo/fragengine)
+        MESSAGE(STATUS "Submodule update")
+        execute_process(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+                        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+                        RESULT_VARIABLE GIT_SUBMOD_RESULT)
+        IF(NOT GIT_SUBMOD_RESULT EQUAL "0")
+            MESSAGE(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+        ENDIF()
+    ENDIF()
+	SET(FRAG_CORE_INCLUDE "${PROJECT_SOURCE_DIR}/fragengine/frag-core/include")
+	SET(FRAG_ENGINE_INCLUDE "${PROJECT_SOURCE_DIR}/fragengine/frag-engine/include")
+	ADD_SUBDIRECTORY(${PROJECT_SOURCE_DIR}/extern/repo/fragengine)
+ELSE()
 
-# IF(SDL2_FOUND)
-# 	MESSAGE(STATUS "SDL2 found: ${SDL2_LIBRARIES} -- ${SDL2_VERSION}")
-# ELSE()
+endif()
 
-# ENDIF()
+IF(NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/repo/fragengine")
+    message(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
+ENDIF()
+
+
+#TODO remove since fragengine will provide it.
+FIND_PROGRAM(OPENSSL openssl)
+IF(PKG_CONFIG_FOUND)
+	IF(BUILD_WITH_SDL_WINDOW)
+		PKG_CHECK_MODULES(SDL2 REQUIRED sdl2)
+	ENDIF()
+ELSE()
+	MESSAGE(WARNING "Could not find pgk-config, attempting default values.")
+	#TODO default values for SDL2
+ENDIF()
+
+IF(SDL2_FOUND)
+	MESSAGE(STATUS "SDL2 found: ${SDL2_LIBRARIES} -- ${SDL2_VERSION}")
+ELSE()
+
+ENDIF()
 
 #TODO add for fragengine and fragcore!
 #PKG_CHECK_MODULES(SDL2 REQUIRED sdl2)
@@ -40,13 +68,12 @@ FILE(GLOB HEADER_FILES  ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
 SET( SHADERZIP "fragview-internal-asset" )
 SET( SHADERZIPFILE "${SHADERZIP}.zip" )
 
-
 #
 ADD_EXECUTABLE(fragview ${SOURCE_FILES} ${HEADER_FILES})
 TARGET_LINK_LIBRARIES(fragview fragcore fragengine)
-TARGET_INCLUDE_DIRECTORIES(fragview PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/ )
+TARGET_INCLUDE_DIRECTORIES(fragview PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/ ${FRAG_CORE_INCLUDE} ${FRAG_ENGINE_INCLUDE} )
 TARGET_COMPILE_DEFINITIONS(fragview PRIVATE FRAGVIEW_INTERNAL_ASSET_FILENAME="${SHADERZIPFILE}")
-ADD_DEPENDENCIES(fragview fragcore fragengine)
+#ADD_DEPENDENCIES(fragview fragcore fragengine)
 
 FILE(GLOB SAMPLE_SHADER_GLSL_FILES ${PROJECT_SOURCE_DIR}/shaders/glsl/* )
 FILE(GLOB SAMPLE_SHADER_SPIRV_FILES ${PROJECT_SOURCE_DIR}/shaders/spriv/* )
