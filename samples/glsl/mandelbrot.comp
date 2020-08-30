@@ -1,0 +1,19 @@
+
+layout (local_size_x =16, local_size_y = 16) in;
+layout(binding = 0, rgba8) uniform writeonly image2D fragColor; //
+
+
+void main(void) {
+    ivec2 storePos = ivec2(gl_GlobalInvocationID.xy);
+    int x = storePos.x;
+    int y = storePos.y;
+
+    vec4 p00 = imageLoad(texture0, ivec2(x, y));//vec4(1.0, 1.0, 1.0, 1.0);//
+
+    //
+    //const vec4 constFactor = vec4(112.0 / 255.0, 66.0 / 255.0, 20.0 / 255.0, 1.0);
+    const vec4 constFactor = vec4(1.0,storePos.x / 2000.0, 20.0 / 255.0 * time, 1.0);
+    const vec4 pixel = p00 * constFactor;
+
+    imageStore(fragColor, storePos, pixel);
+}
