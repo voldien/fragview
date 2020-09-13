@@ -5,6 +5,7 @@ OPTION(BUILD_WITH_COVERAGE "Enable profiling and coverage report analysis." ON)
 OPTION(BUILD_WITH_PROFILER "Enable profiling." ON)
 OPTION(BUILD_WITH_EXTERNAL_PROJECT "Enable external project build." ON)
 OPTION(BUILD_WITH_INSTALL "." ON )
+OPTION(BUILD_WITH_TEST "" OFF)
 
 # Set version of the project.
 SET(VERSION_MAJOR 0)
@@ -86,7 +87,7 @@ IF(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
 	OPTION(GIT_SUBMODULE "Check submodules during build" ON)
 	IF(GIT_SUBMODULE)
 		FILE(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/extern/repo/fragengine)
-		MESSAGE(STATUS "Submodule update")
+		MESSAGE(STATUS "Submodule update  --recursive")
 		EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
 						WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 						RESULT_VARIABLE GIT_SUBMOD_RESULT)
@@ -94,12 +95,14 @@ IF(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
 			MESSAGE(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
 		ENDIF()
 	ENDIF()
-	SET(FRAG_CORE_INCLUDE "${PROJECT_SOURCE_DIR}/fragengine/frag-core/include")
-	SET(FRAG_ENGINE_INCLUDE "${PROJECT_SOURCE_DIR}/fragengine/frag-engine/include")
+	
+	#TODO determine if can be done auto.
+	SET(FRAG_CORE_INCLUDE "${PROJECT_SOURCE_DIR}/extern/repo/fragengine/frag-core/include")
+	SET(FRAG_ENGINE_INCLUDE "${PROJECT_SOURCE_DIR}/extern/repo/fragengine/frag-engine/include")
 	ADD_SUBDIRECTORY(${PROJECT_SOURCE_DIR}/extern/repo/fragengine EXCLUDE_FROM_ALL)
 ELSE()
 
-endif()
+ENDIF()
 
 IF(NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/repo/fragengine")
 	MESSAGE(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
@@ -175,7 +178,7 @@ IF(BUILD_WITH_INSTALL)
 					COMMAND ${CP} -r ${PROJECT_SOURCE_DIR}/shaders/* ${CMAKE_CURRENT_BINARY_DIR}/shaders/
 					COMMAND zip -r ${SHADERZIPFILE} ${RELATIVE_SHADER_SOURCE}/
 					COMMAND ${RM} -r ${CMAKE_CURRENT_BINARY_DIR}/shaders
-					COMMENT "")
+					COMMENT "Created Asset file")
 			ADD_DEPENDENCIES(fragview internal-shader-generation)
 			INSTALL( FILES ${SHADERZIPFILE} DESTINATION /usr/share/fragview )
 		ELSE()
@@ -199,28 +202,11 @@ IF(BUILD_WITH_INSTALL)
 	# INSTALL( FILES ${SAMPLE_CLC_FILES} DESTINATION /usr/share/fragview/samples/clc COMPONENT ${BINFRAGVIEW_COMPONENT})
 ENDIF()
 
-
 #SET(FRAGVIEW_BIN ${CMAKE_CURRENT_SOURCE_DIR}/../client/fragview)
 
 IF(BUILD_WITH_TEST)
 	ENABLE_TESTING()
-	IF (UNIX)
-		#TODO improve with arguments for more flexiable testing.
-		ADD_TEST(NAME assert-samples
-				COMMAND ${BASH} sample-testing.sh ${CMAKE_CURRENT_SOURCE_DIR}/samples/ $<TARGET_FILE:fragview>
-				WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-	ENDIF ()
-
-	FIND_PROGRAM(MEMORYCHECK_COMMAND valgrind)
-	IF (MEMORYCHECK_COMMAND)
-		MESSAGE(STATUS "valgrind found: ${MEMORYCHECK_COMMAND}")
-		SET(MEMORYCHECK_COMMAND_OPTIONS "--tool=memcheck --xml=yes --xml-file=/tmp/valgrind --gen-suppressions=all --leak-check=full --leak-resolution=med --track-origins=yes --vgdb=no")
-		SET(MEMORYCHECK_SUPPRESSIONS_FILE "${PROJECT_SOURCE_DIR}/valgrind_suppress.txt")
-		SET(MEMORYCHECK_FULL_COMMAND "${MEMORYCHECK_COMMAND} ${MEMORYCHECK_COMMAND_OPTIONS}")
-
-		ADD_TEST(NAME memory-leak-default
-				COMMAND ${MEMORYCHECK_FULL_COMMAND} ${FRAGVIEW_BIN} --version)
-	ENDIF ()
+	ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/test)
 ENDIF(BUILD_WITH_TEST)
 
 IF(OPENSSL AND FRAGVIEW_BUILD_WITH_SANITY_CHECK)

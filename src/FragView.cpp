@@ -1,4 +1,5 @@
 #include"FragView.h"
+#include"OptionDicSet.h"
 #include"RenderPipeline/RenderPipelineSettings.h"
 #include "RenderPipeline/RenderPipelineForward.h"
 #include"SandBoxSubScene.h"
@@ -110,7 +111,7 @@ void FragView::init(int argc, const char **argv) {
 
 	/*  Verbose information.    */
 	Log::log(Log::Verbose, "Platform: %s\n", SystemInfo::getOperatingSystemName(SystemInfo::getOperatingSystem()));
-	Log::log(Log::Verbose, "CPU Cores: %d", SystemInfo::getCPUCoreCount());
+	Log::log(Log::Verbose, "CPU Cores: %d\n", SystemInfo::getCPUCoreCount());
 	Log::log(Log::Verbose, "Memory: %d MB\n", SystemInfo::systemMemorySize());
 	Log::log(Log::Verbose, "Cache line: %d bytes\n", SystemInfo::getCPUCacheLine());
 	Log::log(Log::Verbose, "page size: %d bytes\n", SystemInfo::getPageSize());
@@ -192,6 +193,37 @@ void FragView::loadDefaultSceneAsset(void){
 		/*  Create Scene.   */
 		this->scene = SceneFactory::createScene(*this->renderer, SceneFactory::eSandBox);
 		SandBoxSubScene *sandBoxSubScene = NULL;
+		// 		scene->createGLSLSandBoxScene();
+		// 		SandBoxSubScene *sandbox = scene->getGLSLSandBoxScene();
+		// 		FragGraphicUniform *fragGraphicUniform = sandbox->getFragUniform();
+
+		// 		const int nrInDispatch = 256;
+		// 		BufferDesc computeDesc = {};
+		// 		computeDesc.type = BufferDesc::eIndirectDispatch;
+		// 		computeDesc.data = NULL;
+		// 		computeDesc.size = sizeof(IndirectDispatch) * nrInDispatch;
+		// 		computeDesc.hint = (BufferDesc::BufferHint)(BufferDesc::eRead | BufferDesc::eStream);
+		// 		computeDesc.marker.markerName = "Compute indirect dispatch";
+		// 		scene->getGLSLSandBoxScene()->setDisptchBuffer(Ref<Buffer>(rendering->createBuffer(&computeDesc)));
+
+		// 		/*  Initialize the fragment.  */
+		// 		fragGraphicUniform->inputs.x = 0.0f;
+		// 		fragGraphicUniform->inputs.y = 0.0f;
+		// 		fragGraphicUniform->inputs.ax = 0.0f;
+		// 		fragGraphicUniform->inputs.ay = 0.0f;
+		// 		fragGraphicUniform->inputs.wheel = 0.0f;
+		// 		fragGraphicUniform->inputs.wheelacc = 0.0f;
+
+		// 		int view[2];
+		// //		rendering->getView(0)-> NULL, NULL, &view[0], &view[1]);
+		// //		fragGraphicUniform->window.width = view[0];
+		// //		fragGraphicUniform->window.height = view[1];
+		// //		fragGraphicUniform->window.x = 0.0f;
+		// //		fragGraphicUniform->window.y = 0.0f;
+
+		// 		fragGraphicUniform->time.time = 0.0f;
+		// 		fragGraphicUniform->time.deltaTime = 0.0f;
+		
 		//this->scene->getGLSLSandBoxScene();
 
 		/*  TODO add internal verification of asset if enabled.    */
@@ -354,6 +386,8 @@ void FragView::loadDefaultSceneAsset(void){
 	}
 	else
 	{
+		IConfig &sceneConfig = this->config->getSubConfig(CONFIG_SCENE);
+
 		/*  Create 3D view scene.   */
 		this->scene = SceneFactory::createScene(*this->renderer, SceneFactory::eWorldSpace);
 		this->renderpipeline = Ref<IRenderPipelineBase>(new RenderPipelineForward(this->renderer));
@@ -361,6 +395,12 @@ void FragView::loadDefaultSceneAsset(void){
 		// Read from options for loading the scene.
 		ASyncHandle displayFragV = internalAsset->openASyncFile("shaders/glsl/skybox.vert", IO::READ);
 		ASyncHandle displayFragF = internalAsset->openASyncFile("shaders/glsl/skybox.frag", IO::READ);
+
+		/*	Load asset.	*/
+
+		/*	Load shaders.	*/
+
+		/*	Create camera.	*/
 	}
 
 	internalAsset->deincreemnt();

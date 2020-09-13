@@ -1,5 +1,4 @@
 #include"Config.h"
-#include"ConfigDefaultOptions.h"
 #include"OptionDicSet.h"
 #include"Utils/StringUtil.h"
 #include<getopt.h>
@@ -19,96 +18,102 @@ using namespace fragview;
 /*	TODO reorder    */
 static const char *shortarg = "vVdqh" "wSp:r:P:dD:Isar:g:C:f:A:t:vF:cRH:E:nNC:G:p:UbP:~_";
 static struct option longoptions[] = {
-		/*  First pass arguments.   */
-		{"version",                no_argument,       NULL, 'v'},    /*	Print version of application.	*/
-		{"verbose",                no_argument,       NULL, 'V'},    /*	Print.	*/
-		{"debug",                  no_argument,       NULL, 'd'},    /*	Debug.	*/
-		{"quite",                  no_argument,       NULL, 'q'},    /*	Quite .	*/
-		{"help",                   no_argument,       NULL, 'h'},    /*	Help.	*/
-		{"config",                 required_argument, NULL, 'D'},    /*	Override the configuration.	*/
+	/*  First pass arguments.   */
+	{"version", no_argument, NULL, 'v'},		/*	Print version of application.	*/
+	{"verbose", no_argument, NULL, 'V'},		/*	Print.	*/
+	{"debug", 	no_argument, NULL, 'd'},		/*	Debug.	*/
+	{"quite", 	no_argument, NULL, 'q'},		/*	Quite .	*/
+	{"help", 	no_argument, NULL, 'h'},		/*	Help.	*/
+	{"config", 	required_argument, NULL, 'D'},	/*	Override the configuration.	*/
+	{"supported-features", no_argument, NULL, ' '},
 
-		/*  Screen override options.    */
-		{"fullscreen",             no_argument,       NULL, ' '},   /*  	*/
-		{"screen-width",           required_argument, NULL, '_'},   /*	    */
-		{"screen-height",          required_argument, NULL, '_'},   /*	    */
-		{"screen-x",               required_argument, NULL, '_'},   /*	    */
-		{"screen-y",               required_argument, NULL, '_'},   /*	    */
-		{"no-decoration",          no_argument,       NULL, '~'},   /*	Use no window decoration.	*/
-		{"wallpaper",              optional_argument, NULL, 'w'},   /*	use as wallpaper.	*/
+	/*  Screen override options.    */
+	{"fullscreen", no_argument, NULL, ' '},			 /*  	*/
+	{"screen-width", required_argument, NULL, '_'},	 /*	    */
+	{"screen-height", required_argument, NULL, '_'}, /*	    */
+	{"screen-x", required_argument, NULL, '_'},		 /*	    */
+	{"screen-y", required_argument, NULL, '_'},		 /*	    */
+	{"no-decoration", no_argument, NULL, '~'},		 /*	Use no window decoration.	*/
+	{"wallpaper", optional_argument, NULL, 'w'},	 /*	use as wallpaper.	*/
 
-		/*	Long options for rendering interface.   */
-		{"renderer-opengl",        no_argument,       NULL, '~'},    /*	Force rendering API OpenGL. */
-		{"renderer-opencl",        no_argument,       NULL, '~'},    /*	Force rendering API OpenCL. */
-		{"renderer-vulkan",        no_argument,       NULL, '~'},    /*	Force rendering API Vulkan. */
-		{"renderer-directx",       no_argument,       NULL, '~'},    /*	Force rendering API DirectX. */
-		/*  Long options with arguments.    */
-		{"renderer",               required_argument, NULL, 'r'},    /*	Set renderer by rendering path.   */
+	/*	Long options for rendering interface.   */
+	{"renderer-opengl", no_argument, NULL, '~'},  /*	Force rendering API OpenGL. */
+	{"renderer-vulkan", no_argument, NULL, '~'},  /*	Force rendering API Vulkan. */
+	{"renderer-directx", no_argument, NULL, '~'}, /*	Force rendering API DirectX. */
 
-		/*	Rendering Quality.  */
-		{"quality",                required_argument, NULL, '_'},    /*	*/
-		{"resolution-scale",       required_argument, NULL, 'R'},   /*	Texture scale resolution (required gl_framebuffer_object for OpenGL).*/
+	/*  Long options with arguments.    */
+	{"renderer", required_argument, NULL, 'r'},	/*	Set renderer by rendering path.   */
+	{"compute", required_argument, NULL, 'C'},	/*	Set standalone compute.	*/
 
-		/*  Rendering Settings. */
-		{"anti-aliasing",          required_argument, NULL, '_'},    /*	Set antialiasing.   */
-		{"srgb",                   no_argument,       NULL, 'S'},    /*	sRGB, gamma correction.	*/
-		{"alpha",                  no_argument,       NULL, 'a'},    /*	use alpha channel.	*/
-		{"v-sync",                 no_argument,       NULL, '~'},    /*	Enable vsync.   */
+	/*	Rendering Quality.  */
+	{"quality", required_argument, NULL, '_'},			/*	*/
+	{"resolution-scale", required_argument, NULL, 'R'}, /*	Texture scale resolution (required gl_framebuffer_object for OpenGL).*/
 
-		/*  FragView behaviour options.  */
-		{"disable-notify-file",  no_argument,       NULL, 'N'},   /*  Disable inotify notification.	*/
-		{"cache-shader",         optional_argument, NULL, '_'},   /*  Enable cache shader.	*/
-		{"use-cache-shaders",    no_argument,       NULL, '_'},   /*  Enable cache shader.	*/
-		{"no-use-cache-shaders", no_argument,       NULL, '_'},   /*  Enable cache shader.	*/
+	/*  Rendering Settings. */
+	{"anti-aliasing", required_argument, NULL, '_'}, /*	Set antialiasing.   */
+	{"srgb", no_argument, NULL, 'S'},				 /*	sRGB, gamma correction.	*/
+	{"alpha", no_argument, NULL, 'a'},				 /*	use alpha channel.	*/
+	{"v-sync", no_argument, NULL, '~'},				 /*	Enable vsync.   */
 
-		{"scene",                  required_argument, NULL, 'B'},   /*		*/
+	/*  FragView Internal behaviour options.  */
+	{"disable-notify-file", no_argument, NULL, 'N'},  /*  Disable inotify notification.	*/
+	{"cache-shader", optional_argument, NULL, '_'},	  /*  Enable cache shader.	*/
+	{"use-cache-shaders", no_argument, NULL, '_'},	  /*  Enable cache shader.	*/
+	{"no-use-cache-shaders", no_argument, NULL, '_'}, /*  Enable cache shader.	*/
 
-		/*  */
-		{"poly",                   required_argument, NULL, 'p'},   /*	Polygon - .	*/
-		{"param",                  required_argument, NULL, 'P'},   /*  Parameters. */
-		{"stdin",                  optional_argument, NULL, 'I'},   /*	stdin data as buffer.	*/
-		{"stream",                 required_argument, NULL, 's'},   /*  Stream file. */
-		{"stream-pipe",            no_argument,       NULL, 'O'},   /*  Stream, enabled via stream object. */
+	{"scene", required_argument, NULL, 'B'}, /*		*/
 
-		{"sample",                 required_argument, NULL, '_'},    /*	*/
-		/*  */
-		{"sandbox",                optional_argument, NULL, 'b'},   /*  Enable the sandbox. */
+	/*  */
+	{"poly", required_argument, NULL, 'p'},	  /*	Polygon - Model.	*/
+	{"param", required_argument, NULL, 'P'},  /*  Parameters. */
+	{"stdin", optional_argument, NULL, 'I'},  /*	stdin data as buffer.	*/
+	{"stream", required_argument, NULL, 's'}, /*  Stream file. */
+	{"stream-pipe", no_argument, NULL, 'O'},  /*  Stream, enabled via stream object. */
 
-		/*  Shader types.   */
-		{"file",                   required_argument, NULL, 'f'},   /*	Default shader file.	*///TODO resolve if to be remove.
-		{"fragment",               required_argument, NULL, 'F'},   /*	Fragment shader source.	*/
-		{"geometry",               required_argument, NULL, 'G'},   /*	Geometry shader source.	*/
-		{"compute",                required_argument, NULL, 'H'},   /*	Compute shader source.	*/
-		{"tessellation-control",   required_argument, NULL, 'C'},   /*	Tessellation C shader source.	*/
-		{"tessellation-evolution", required_argument, NULL, 'E'},   /*	Tessellation E shader source.	*/
-		{"binary-program",         required_argument, NULL, 'B'},   /*		*/
+	{"sample", required_argument, NULL, '_'}, /*	*/
+	/*  */
+	{"sandbox", optional_argument, NULL, 'b'}, /*  Enable the sandbox. */
 
-		/*  Texture arguments.  16 texture unit support by default. */
-		{"texture0",               required_argument, NULL, ' '},   /*	Texture on index 0. */
-		{"texture1",               required_argument, NULL, ' '},   /*	*/
-		{"texture2",               required_argument, NULL, ' '},   /*	*/
-		{"texture3",               required_argument, NULL, ' '},   /*	*/
-		{"texture4",               required_argument, NULL, ' '},   /*	*/
-		{"texture5",               required_argument, NULL, ' '},   /*	*/
-		{"texture6",               required_argument, NULL, ' '},   /*	*/
-		{"texture7",               required_argument, NULL, ' '},   /*	*/
-		{"texture8",               required_argument, NULL, ' '},   /*	*/
-		{"texture9",               required_argument, NULL, ' '},   /*	*/
-		{"texture10",              required_argument, NULL, ' '},   /*	*/
-		{"texture11",              required_argument, NULL, ' '},   /*	*/
-		{"texture12",              required_argument, NULL, ' '},   /*	*/
-		{"texture13",              required_argument, NULL, ' '},   /*	*/
-		{"texture14",              required_argument, NULL, ' '},   /*	*/
-		{"texture15",              required_argument, NULL, ' '},   /*	*/
-		{"texture",                required_argument, NULL, 't'},   /*	Texture, next texture unit. */
-		{"compression",            optional_argument, NULL, 'c'},   /*	Texture compression.	*/
+	/*  Shader types.   */
+	{"file", required_argument, NULL, 'f'},
+	/*	Default shader file.	*/							  	
+	{"fragment", 				required_argument, NULL, 'F'},		/*	Fragment shader source.	*/
+	{"geometry", 				required_argument, NULL, 'G'},		/*	Geometry shader source.	*/
+	{"compute", 				required_argument, NULL, 'H'},		/*	Compute shader source.	*/
+	{"tessellation-control", 	required_argument, NULL, 'C'},	  	/*	Tessellation C shader source.	*/
+	{"tessellation-evolution", 	required_argument, NULL, 'E'}, 		/*	Tessellation E shader source.	*/
+	{"mesh-shader", 			required_argument, NULL, 'E'}, 		/*	Mesh shader	source.	*/
+	{"binary-program", 			required_argument, NULL, 'B'},		/*		*/
+	{"material-program", 		required_argument, NULL, 'M'},		/*	TODO add support for complex materials combinations.	*/
 
-		/*  TODO: Future version using DSL for materials.   */
-		{"inline-script",          required_argument, NULL, 'O'},   /*  Inline script. */
-		{"script",                 required_argument, NULL, 'O'},   /*  Script file. */
+	/*  Texture arguments.  16 texture unit support by default. */
+	{"texture0", required_argument, NULL, ' '},	   /*	Texture on index 0. */
+	{"texture1", required_argument, NULL, ' '},	   /*	*/
+	{"texture2", required_argument, NULL, ' '},	   /*	*/
+	{"texture3", required_argument, NULL, ' '},	   /*	*/
+	{"texture4", required_argument, NULL, ' '},	   /*	*/
+	{"texture5", required_argument, NULL, ' '},	   /*	*/
+	{"texture6", required_argument, NULL, ' '},	   /*	*/
+	{"texture7", required_argument, NULL, ' '},	   /*	*/
+	{"texture8", required_argument, NULL, ' '},	   /*	*/
+	{"texture9", required_argument, NULL, ' '},	   /*	*/
+	{"texture10", required_argument, NULL, ' '},   /*	*/
+	{"texture11", required_argument, NULL, ' '},   /*	*/
+	{"texture12", required_argument, NULL, ' '},   /*	*/
+	{"texture13", required_argument, NULL, ' '},   /*	*/
+	{"texture14", required_argument, NULL, ' '},   /*	*/
+	{"texture15", required_argument, NULL, ' '},   /*	*/
+	{"texture", required_argument, NULL, 't'},	   /*	Texture, next texture unit. */
+	{"compression", optional_argument, NULL, 'c'}, /*	Texture compression.	*/
+	{"texture-config", required_argument, NULL, '_'},
 
-		/*  */
-		{"save-config",            optional_argument, NULL, 'U'},   /*  Enable saving of configuration file to either default or specific filepath. */
-		{NULL, 0,                                     NULL, 0},
+	/*  TODO: Future version using DSL (Domain specific language) for materials.   */
+	{"inline-script", required_argument, NULL, 'O'}, /*  Inline script. */
+	{"script", required_argument, NULL, 'O'},		 /*  Script file. */
+
+	/*  */
+	{"save-config", optional_argument, NULL, 'U'}, /*  Enable saving of configuration file to either default or specific filepath. */
+	{NULL, 0, NULL, 0},
 };
 
 Config::Config(void) : fragcore::IConfig() {}
@@ -118,7 +123,7 @@ Config::Config(const Config &other) {
 }
 
 Config::~Config(void) {
-
+	//TODO determine what needs to be done here.
 }
 
 fragcore::IConfig *Config::getSuperInstance(void) {
@@ -126,7 +131,6 @@ fragcore::IConfig *Config::getSuperInstance(void) {
 }
 
 void Config::setDefaultOption(void) {
-	//*this = *ConfigDefaultOptions::createDefaultConfig();
 
 	IConfig &global = *this;
 #if defined(_DEBUG)
@@ -135,14 +139,10 @@ void Config::setDefaultOption(void) {
 	global.set("debug", false);
 #endif
 
-	/*  Sandbox fragview.   */
-	global.set("sandbox", false);
+
 	/*  Behavior functions.   */
 	global.set("notify-file", true);
-	global.set("drag-and-drop", true);
-	/*  Internal.   */
-	global.set("cache-shaders", true);
-	global.set("use-cache-shaders", true);
+	global.set("drag-and-drop", true);	/*	Only for 3D scenes.	*/
 
 	/*	Default interfaces configuration.	*/
 	global.set("renderer-dynamicInterface",
@@ -151,30 +151,30 @@ void Config::setDefaultOption(void) {
 
 	/*TODO determine if to relocate.    */
 	/*	Engine default configuration.	*/
-	IConfig &renderingConfig = this->getSubConfig("render-driver");
-	renderingConfig.set("extensions", "");
-	renderingConfig.set("layers", "");
+	IConfig &rendererAPIConfig = this->getSubConfig("render-driver");
+	rendererAPIConfig.set("extensions", "");
+	rendererAPIConfig.set("layers", "");
 	// OpenGL configuration.
-	renderingConfig.set("opengl", -1);
-	renderingConfig.set("core", 1);
+	rendererAPIConfig.set("opengl", -1);
+	rendererAPIConfig.set("core", 1);
 	// Vulkan configuration.
-	renderingConfig.set("vulkan-version", 110);
+	rendererAPIConfig.set("vulkan-version", 110);
 	// DirectX configuration.
-	renderingConfig.set("direct-x-version", 0);
+	rendererAPIConfig.set("direct-x-version", 0);
 	//
-	renderingConfig.set("alpha", false);
-	renderingConfig.set("v-sync", true);
-	renderingConfig.set("gamma-correction", true);
-	renderingConfig.set("debug", false);
-	renderingConfig.set("debug-tracer", true);
-	renderingConfig.set("anti-aliasing-samples", 0);
-	renderingConfig.set("anti-aliasing", false);
-	renderingConfig.set("version", "auto"); //TODO check if a better name is better.
+	rendererAPIConfig.set("alpha", false);
+	rendererAPIConfig.set("v-sync", true);
+	rendererAPIConfig.set("gamma-correction", true);
+	rendererAPIConfig.set("debug", false);
+	rendererAPIConfig.set("debug-tracer", true);
+	rendererAPIConfig.set("anti-aliasing-samples", 0);
+	rendererAPIConfig.set("anti-aliasing", false);
+	rendererAPIConfig.set("version", "auto"); //TODO check if a better name is better.
 
 	/*  Global main window settings.    */
 	IConfig &renderWindowSetting = this->getSubConfig("render-window-settings");
-	renderWindowSetting.set("fullscreen", 0);
-	renderWindowSetting.set("isFullscreen", 0);
+	renderWindowSetting.set("fullscreen", false);
+	renderWindowSetting.set("isFullscreen", 0);	//TODO determine if to remove or not.
 	renderWindowSetting.set("screen-width", -1);
 	renderWindowSetting.set("screen-height", -1);
 	renderWindowSetting.set("screen-max-width", -1);
@@ -187,7 +187,47 @@ void Config::setDefaultOption(void) {
 	renderWindowSetting.set("window-resizable", true);
 	renderWindowSetting.set("window-bordered", true);
 
-	/*  */
+
+
+
+	IConfig &resourceConfig = this->getSubConfig("resource-settings");
+	/*	Resources default configuration.	*/
+	resourceConfig.set("shaddir", "/usr/share/fragview");
+	resourceConfig.set("settings", "");
+	resourceConfig.set("dump-configuration", "fragview.xml");
+	resourceConfig.set("save-configuration", false);
+	resourceConfig.set("fragview-internal-shaders-files", FRAGVIEW_INTERNAL_ASSET_FILENAME);
+	/*	*/
+	resourceConfig.set("cache-directory", ".");
+	resourceConfig.set("cache-shaders", true);
+	resourceConfig.set("use-cache-shaders", true);
+
+	IConfig &sandboxConfig = this->getSubConfig("sandbox");
+	/*  Assets import.  */
+	//sandboxConfig.set("texture0", 0);
+	//sandboxConfig.set("shader0", 0);
+	//sandboxConfig.set("compression", false);
+	/*  Variables.  */
+	sandboxConfig.set("num_textures", 0);
+	sandboxConfig.set("num_shaders", 0);
+	sandboxConfig.set("num_compute", 0);
+	sandboxConfig.set("num_program_shaders", 0);
+
+	/*  Sandbox fragview.   */
+	global.set("sandbox", false);
+	/*  sandbox rendering settings. */
+	IConfig &renderSandboxSettingsConfig = this->getSubConfig("render-sandbox-graphic-settings");
+	/*	Rendering default configuration.	*/
+	renderSandboxSettingsConfig.set("anti-aliasing-samples", 0);
+	renderSandboxSettingsConfig.set("anti-aliasing", false);
+	renderSandboxSettingsConfig.set("texture-quality", 4);
+	renderSandboxSettingsConfig.set("resolution-scale", 1.0f);
+	renderSandboxSettingsConfig.set("coverage", 0);
+
+	/*	*/
+	IConfig &sceneAsset = this->getSubConfig("scene-asset");
+	/**/
+	/*  TODO be used with the quality setting object that takes Iconfig as object.*/
 	IConfig &render3DSettingConfig = this->getSubConfig("render-graphic-settings");
 	/*  Anti aliasing.  */
 	render3DSettingConfig.set("anti-aliasing-samples", 0);
@@ -207,56 +247,24 @@ void Config::setDefaultOption(void) {
 	render3DSettingConfig.set("shadow-cascaded-2", 250.0f);
 	render3DSettingConfig.set("shadow-cascaded-3", 800.0f);
 	/*  Light.  */
+	IConfig& light0 = render3DSettingConfig.getSubConfig("light0");
+	light0.set("intensity", 1);
 
 	/*  */
-
-	IConfig &sceneConfig = this->getSubConfig("default-scene-settings");
+	IConfig &sceneConfig = this->getSubConfig(CONFIG_SCENE);
+	/*  Scene properties.   */
+	sceneConfig.set("free-rotation", true);
+	sceneConfig.set("free-rotation-speed", 3.14f / 10.0f);
+	sceneConfig.set("default-focus", true);
+	
 	/*  Camera default. */
-	IConfig& cameraConfig = sceneConfig.getSubConfig("main-camera");
+	IConfig &cameraConfig = sceneConfig.getSubConfig("main-camera");
 	cameraConfig.set("camera-fov", 70.0f);
 	cameraConfig.set("camera-near", 0.15f);
 	cameraConfig.set("camera-far", 1000.0f);
 	cameraConfig.set("camera-aspect", -1.0f);
 	cameraConfig.set("enable-free-camera", false);
 	cameraConfig.set("camera-", 0);
-
-	/*  Scene properties.   */
-	sceneConfig.set("free-rotation", true);
-	sceneConfig.set("free-rotation-speed", 3.14f / 10.0f);
-	sceneConfig.set("default-focus", true);
-
-	/*  */
-	IConfig &resourceConfig = this->getSubConfig("resource-settings");
-	/*	Resources default configuration.	*/
-	resourceConfig.set("shaddir", "/usr/share/fragview");
-	resourceConfig.set("settings", "");
-	resourceConfig.set("dump-configuration", "fragview.xml");
-	resourceConfig.set("save-configuration", false);
-	resourceConfig.set("fragview-internal-shaders-files", FRAGVIEW_INTERNAL_ASSET_FILENAME);
-	resourceConfig.set("cache-directory", ".");
-
-	IConfig &sandboxConfig = this->getSubConfig("sandbox");
-	/*  Assets import.  */
-	//sandboxConfig.set("texture0", 0);
-	//sandboxConfig.set("shader0", 0);
-	//sandboxConfig.set("compression", false);
-	/*  Variables.  */
-	sandboxConfig.set("num_textures", 0);
-	sandboxConfig.set("num_shaders", 0);
-	sandboxConfig.set("num_compute", 0);
-	sandboxConfig.set("num_program_shaders", 0);
-
-	/*  sandbox rendering settings. */
-	IConfig &renderSandboxSettingsConfig = this->getSubConfig("render-sandbox-graphic-settings");
-
-	/*	Rendering default configuration.	*/
-	renderSandboxSettingsConfig.set("anti-aliasing-samples", 0);
-	renderSandboxSettingsConfig.set("anti-aliasing", false);
-	renderSandboxSettingsConfig.set("texture-quality", 4);
-	renderSandboxSettingsConfig.set("resolution-scale", 1.0f);
-	renderSandboxSettingsConfig.set("coverage", 0);
-
-	IConfig &sceneAsset = this->getSubConfig("scene-asset");
 }
 
 void Config::parseGetOpt(int argc, const char **argv) {
@@ -268,7 +276,9 @@ void Config::parseGetOpt(int argc, const char **argv) {
 
 	/*  First pass options. */
 	while ((c = getopt_long(argc, (char *const *) argv, shortarg, longoptions, &index)) != EOF) {
-
+		const char *option = NULL;
+		if (index >= 0 && index < sizeof(longoptions) / sizeof(longoptions[0]))
+			option = longoptions[index].name;
 		switch (c) {
 			case 'v':   /*  Display version only of the program.    */
 				Log::log(Log::Quite, "version %s.\n", FragView::getVersion());
@@ -287,6 +297,11 @@ void Config::parseGetOpt(int argc, const char **argv) {
 			case 'q':   /*  Set logging to quite.   */
 				Log::setVerbosity(Log::Quite);
 				break;
+				if (option) {
+					if (strcmp(option, "supported_features") == 0){
+						/*	*/
+					}
+				}
 			default:
 				break;
 		}

@@ -47,6 +47,7 @@
 #define CONFIG_CACHE_DATA ""
 #define CONFIG_USE_CACHE
 #define CONFIG_CACHE_DIR
-#define CONFIG_SQL_FILEPATH
-#define CONFIG_REST_API
+
+#define CONFIG_SCENE "default-scene-settings"
+
 #endif

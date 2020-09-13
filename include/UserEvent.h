@@ -1,5 +1,5 @@
 /**
-    FrameView for rendering shaders in screen space.
+	FragEngine, A Two layer Game Engine.
     Copyright (C) 2018  Valdemar Lindberg
 
     This program is free software: you can redistribute it and/or modify
@@ -16,21 +16,18 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 */
-#ifndef _FRAGVIEW_CONFIGDEFAULTOPTIONS_H_
-#define _FRAGVIEW_CONFIGDEFAULTOPTIONS_H_ 1
-#include"Def.h"
-#include "Config.h"
+#ifndef _FRAG_CORE_USEREVENT_H_
+#define _FRAG_CORE_USEREVENT_H_ 1
 
-namespace fragview
-{
+//TODO move to fragivew client
+namespace fragcore {
     /**
-     * 
+     *
      */
-    class FVDECLSPEC ConfigDefaultOptions
-    {
-    public:
-        static Config *createDefaultConfig(void);
-    };
+	enum UserEvent {
+		ASSET_UPDATE = 0,   /*  */
+		ASSET_REMOVE = 1,   /*  */
+	};
 }
 
 #endif
