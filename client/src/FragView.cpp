@@ -6,9 +6,8 @@
 #include"RenderPipelineSandBox.h"
 #include"ShaderLoader.h"
 #include<Scene/Scene.h>
-#include<SDL2/SDL.h>
 #include<FileNotify.h>
-#include"Core/IO/ZipFile.h"
+#include<Core/IO/ZipFileSystem.h>
 #include<cassert>
 #include<Utils/TextureUtil.h>
 #include<Utils/ShaderUtil.h>
@@ -21,13 +20,12 @@
 #include <Core/IO/FileIO.h>
 #include"Renderer/RendererFactory.h"
 #include"Scene/Scene.h"
-#include"Core/UserEvent.h"
+#include"UserEvent.h"
 #include"Renderer/ViewPort.h"
 #include"Renderer/RenderDesc.h"
-#include<hpmcpp/HpmCpp.h>
+#include<HpmCpp.h>
 #include <Core/SystemInfo.h>
-#include <SDLRendererWindow.h>
-#include <SDLDisplay.h>
+#include<SDL2/SDL.h>
 #include <Scene/Scene.h>
 #include <Video/VideoFactory.h>
 #include <audio/AudioFactory.h>
@@ -81,7 +79,7 @@ FragView::~FragView(void) {
 	this->logicSch->terminate();
 	delete *this->logicSch;
 
-	this->rendererWindow->closeWindow();
+	this->rendererWindow->close();
 
 	/*  Reduce reference and delete resources.  */
 	if (this->renderer->deincreemnt())
@@ -160,7 +158,7 @@ void FragView::loadDefaultSceneAsset(void){
 	this->rendererWindow->getCurrentDisplay()->getDPI(&dpi);
 	TextureFormat format = this->rendererWindow->getCurrentDisplay()->getFormat();
 
-	ZipFile *internalAsset = NULL;
+	ZipFileSystem *internalAsset = NULL;
 	Ref<IO> internal_zip_io;
 
 	/*	Search for the file.	*/
@@ -175,7 +173,7 @@ void FragView::loadDefaultSceneAsset(void){
 	else
 		throw RuntimeException(
 			fvformatf("Could not find internal resources for default shaders : %s", internal_asset_filename));
-	internalAsset = ZipFile::createZipFileObject(internal_zip_io, this->sch);
+	internalAsset = ZipFileSystem::createZipFileObject(internal_zip_io, this->sch);
 
 	//TODO add support.
 	// Ref<IO> fontIO = Ref<IO>(internalAsset->openFile("DroidSansFallback.ttf", IO::READ));
@@ -389,7 +387,7 @@ void FragView::loadDefaultSceneAsset(void){
 		IConfig &sceneConfig = this->config->getSubConfig(CONFIG_SCENE);
 
 		/*  Create 3D view scene.   */
-		this->scene = SceneFactory::createScene(*this->renderer, SceneFactory::eWorldSpace);
+		//this->scene = SceneFactory::createScene(*this->renderer, SceneFactory::eWorldSpace);
 		this->renderpipeline = Ref<IRenderPipelineBase>(new RenderPipelineForward(this->renderer));
 
 		// Read from options for loading the scene.
@@ -407,7 +405,7 @@ void FragView::loadDefaultSceneAsset(void){
 	delete internalAsset;
 
 	// Assert the variables
-	assert(this->scene && *this->renderpipeline);
+	//assert(this->scene && *this->renderpipeline);
 
 	loadCachedShaders();
 	loadShaders();
@@ -457,24 +455,26 @@ void FragView::createWindow(int x, int y, int width, int height) {
 	}
 
 	/*  Primary display.    */
-	SDLDisplay display = SDLDisplay(0);
+	Display* display = WindowManager::getInstance()->getDisplay(0);
 
 	/*  Compute screen size and location if default value provided.   */
 	if (width == -1)
-		width = display.width() / 2;
+		width = display->width() / 2;
 	if (height == -1)
-		height = display.height() / 2;
+		height = display->height() / 2;
 	if (x == -1)
 		x = width / 2;
 	if (y == -1)
 		y = height / 2;
 
 	/*  Create window.  */
-	this->rendererWindow = new SDLRendererWindow();
-	this->rendererWindow = (*this->renderer)->createWindow(x, y, width, height, rendererWindow);
+	this->rendererWindow = renderer->createWindow(x, y, width, height);
+	
+	// this->rendererWindow = new SDLRendererWindow();
+	// this->rendererWindow = (*this->renderer)->createWindow(x, y, width, height, rendererWindow);
 	assert(this->rendererWindow);
 
-	(*this->renderer)->setCurrentWindow(this->rendererWindow);
+//	(*this->renderer)->setCurrentWindow(this->rendererWindow);
 
 	/*  Update default viewport.    */
 	(*this->renderer)->getView(0)->setDimensions(0, 0, width, height);
@@ -527,7 +527,7 @@ void FragView::createWindow(int x, int y, int width, int height) {
 
 	/*  Display window. */
 	this->rendererWindow->setSize(width, height);   // Force resize event to be poll on start.
-	this->rendererWindow->showWindow();
+	this->rendererWindow->show();
 }
 
 void FragView::run(void) {
@@ -547,13 +547,13 @@ void FragView::run(void) {
 	const bool renderOutOfFoucs = windowConfig.get<bool>("background-rendering");
 
 	// Once everything loaded. Focus the program.
-	this->scene->getTime()->start();
+	//this->scene->getTime()->start();
 	this->rendererWindow->focus();
 
 	FragGraphicUniform tmp;
 	/*  Main logic loop.    */
 	while (isAlive) {
-		Scene *currentScene = this->scene;
+		//Scene *currentScene = this->scene;
 		SandBoxSubScene *sandbox = NULL;
 		//currentScene->getGLSLSandBoxScene();
 		FragGraphicUniform *uniform = &tmp;//TODO resolve sandbox->getFragUniform();
@@ -570,7 +570,7 @@ void FragView::run(void) {
 							uniform->window.width = (float) width;
 							uniform->window.height = (float) height;
 							Log::log(Log::Debug, "viewport resized: %dx%d\n", width, height);
-							this->renderpipeline->setViewport(width, height, *this->renderer);
+							//this->renderpipeline->setViewport(width, height, *this->renderer);
 							break;
 						case SDL_WINDOWEVENT_MOVED:
 							uniform->window.x = (float) event.window.data1;
@@ -676,8 +676,8 @@ void FragView::run(void) {
 		}
 
 		/*  */
-		scene->getTime()->internalUpdate();
-		uniform->time.time = scene->getTime()->timef();
+		//scene->getTime()->internalUpdate();
+		//uniform->time.time = scene->getTime()->timef();
 
 		// Update Object
 
@@ -699,8 +699,8 @@ void FragView::run(void) {
 		if (visible || renderInBackground) {
 
 			/*  Draw current display on the current scene.  */
-			this->renderpipeline->draw(this->scene, this->renderer->getDefaultFramebuffer(this->rendererWindow),
-			                           *this->renderer);
+			// this->renderpipeline->draw(this->scene, this->renderer->getDefaultFramebuffer(this->rendererWindow),
+			//                            *this->renderer);
 			/*  Draw debug. */
 
 			/*  Swap buffer.    */

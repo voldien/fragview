@@ -411,7 +411,7 @@ void RenderPipelineSandBox::init(Ref<IRenderer> &renderer, const IConfig *config
 	//this->font = FontFactory::createFont("ipag.ttf", 10, *this->renderer);
 }
 
-RenderQueue RenderPipelineSandBox::getSupportedQueue(void) const {
-	return (RenderQueue)(Geometry | Overlay);
-}
+// RenderQueue RenderPipelineSandBox::getSupportedQueue(void) const {
+// 	return (RenderQueue)(Geometry | Overlay);
+// }
 

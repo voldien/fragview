@@ -26,7 +26,7 @@ namespace fragview {
 	/**
 	 *
 	 */
-	class FVDECLSPEC RenderPipelineSandBox : public fragengine::IRenderPipelineBase {
+	class FVDECLSPEC RenderPipelineSandBox : public IRenderPipelineBase {
 	public:
 		RenderPipelineSandBox(Ref<IRenderer> &renderer);
 
@@ -40,9 +40,7 @@ namespace fragview {
 
 		void setViewport(int width, int height, IRenderer *render) override;
 
-		virtual void draw(fragengine::Scene *scene, FrameBuffer *frame, IRenderer *render) override;
-
-		fragengine::RenderQueue getSupportedQueue(void) const override;
+		virtual void draw(Node *scene, FrameBuffer *frame, IRenderer *render) override;
 
 	protected:
 		virtual void createFrameTexture(IRenderer *renderer, unsigned int width, unsigned height);
@@ -51,7 +49,7 @@ namespace fragview {
 		//virtual void updateUniform(void);
 
 	private:
-		Ref<GeometryObject> quadDisplay;
+		Ref<Geometry> quadDisplay;
 		Ref<Buffer> quadDisplayIndirect;
 		Ref<ProgramPipeline> displayShader;
 
