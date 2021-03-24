@@ -114,13 +114,6 @@ build-android
 .vscode/
 
 
-# Targets
-fragview
-fragview-assert
-fragview.1.gz
-fragview-editor
-
-
 # Built application files
 *.apk
 *.aar
