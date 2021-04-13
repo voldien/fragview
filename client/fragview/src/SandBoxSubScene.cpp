@@ -1,13 +1,13 @@
-#include <Exception/InvalidArgumentException.h>
 #include "SandBoxSubScene.h"
-#include<Scene/Scene.h>
+#include <Exception/InvalidArgumentException.h>
+#include <Scene/Scene.h>
 
 #include <Renderer/Buffer.h>
-#include <Renderer/ViewPort.h>
 #include <Renderer/FrameBuffer.h>
-#include <Renderer/Query.h>
 #include <Renderer/ProgramPipeline.h>
+#include <Renderer/Query.h>
 #include <Renderer/Sync.h>
+#include <Renderer/ViewPort.h>
 
 using namespace fragcore;
 using namespace fragengine;
@@ -22,7 +22,7 @@ void SandBoxSubScene::addTexture(Texture *texture) {
 
 void SandBoxSubScene::addShader(ProgramPipeline *programPipeline) {
 	/*  Validate the shader has the correct attributes. */
-	if(!programPipeline->getShader(ProgramPipeline::FRAGMENT_SHADER))
+	if (!programPipeline->getShader(ProgramPipeline::FRAGMENT_SHADER))
 		throw InvalidArgumentException("Invalid pipeline. Requires a fragment component");
 
 	/*  Update the uniform locations.   */
@@ -35,7 +35,8 @@ void SandBoxSubScene::addShader(ProgramPipeline *programPipeline) {
 	programPipeline->increment();
 }
 
-void SandBoxSubScene::updateUniformLocations(ProgramPipeline *programPipeline, UniformLocation *location, ProgramPipeline::ShaderType shaderStage) {
+void SandBoxSubScene::updateUniformLocations(ProgramPipeline *programPipeline, UniformLocation *location,
+											 ProgramPipeline::ShaderType shaderStage) {
 
 	/*  Get and cache uniform locations.    */
 	location->time = programPipeline->getShader(shaderStage)->getLocation("time");
@@ -52,86 +53,67 @@ void SandBoxSubScene::updateUniformLocations(ProgramPipeline *programPipeline, U
 	programPipeline->getShader(shaderStage)->setInt(tex0, 0);
 
 	/*  Log only in debug mode. */
-	Log::log(Log::Debug,"----------- fetching uniforms index location ----------\n");
-	Log::log(Log::Debug,"time %d\n", location->time);
-	Log::log(Log::Debug,"deltatime %d\n", location->deltatime);
-	Log::log(Log::Debug,"resolution %d\n", location->resolution);
-	Log::log(Log::Debug,"mouse %d\n", location->mouse);
-	Log::log(Log::Debug,"offset %d\n", location->offset);
-	Log::log(Log::Debug,"stdin %d\n", location->stdin);
-	Log::log(Log::Debug,"backbuffer %d\n", location->backbuffer);
+	Log::log(Log::Debug, "----------- fetching uniforms index location ----------\n");
+	Log::log(Log::Debug, "time %d\n", location->time);
+	Log::log(Log::Debug, "deltatime %d\n", location->deltatime);
+	Log::log(Log::Debug, "resolution %d\n", location->resolution);
+	Log::log(Log::Debug, "mouse %d\n", location->mouse);
+	Log::log(Log::Debug, "offset %d\n", location->offset);
+	Log::log(Log::Debug, "stdin %d\n", location->stdin);
+	Log::log(Log::Debug, "backbuffer %d\n", location->backbuffer);
 }
 
 void SandBoxSubScene::addCompute(ProgramPipeline *compute) {
-	if(!compute->getShader(ProgramPipeline::COMPUTE_SHADER))
+	if (!compute->getShader(ProgramPipeline::COMPUTE_SHADER))
 		throw InvalidArgumentException("Invalid pipeline. Requires a fragment component");
 
 	this->sequences[ProgramPipeline::COMPUTE_SHADER].push_back(compute);
 
 	UniformLocation location;
 	updateUniformLocations(compute, &location, ProgramPipeline::COMPUTE_SHADER);
-	this->cachedUniforms[compute->getUID()] = location;//.insert(this->cachedUniforms.begin(), location);
+	this->cachedUniforms[compute->getUID()] = location; //.insert(this->cachedUniforms.begin(), location);
 
 	unsigned int localSize[3];
 	compute->getShader(ProgramPipeline::COMPUTE_SHADER)->getLocalGroupSize(&localSize[0]);
-	//this->computeLocal.push_back(localSize);
+	// this->computeLocal.push_back(localSize);
 
 	compute->increment();
 }
 
-void SandBoxSubScene::setDisptchBuffer(Ref<Buffer> dispatchBuffer){
+void SandBoxSubScene::setDisptchBuffer(Ref<Buffer> dispatchBuffer) {
 	this->indirectBuffer = dispatchBuffer;
 	assert(*dispatchBuffer);
 }
 
-Texture *SandBoxSubScene::getTexture(int index) {
-	return this->textures[index];
-}
+Texture *SandBoxSubScene::getTexture(int index) { return this->textures[index]; }
 
 ProgramPipeline *SandBoxSubScene::getShader(int index) {
 	return this->sequences[ProgramPipeline::FRAGMENT_SHADER][index];
 }
 
-
 ProgramPipeline *SandBoxSubScene::getCompute(int index) {
 	return this->sequences[ProgramPipeline::COMPUTE_SHADER][index];
 }
 
-int SandBoxSubScene::getNumTextures(void) const {
-	return this->textures.size();
-}
+int SandBoxSubScene::getNumTextures(void) const { return this->textures.size(); }
 
-int SandBoxSubScene::getNumShaders(void) const {
-	return this->sequences[ProgramPipeline::FRAGMENT_SHADER].size();
-}
+int SandBoxSubScene::getNumShaders(void) const { return this->sequences[ProgramPipeline::FRAGMENT_SHADER].size(); }
 
-int SandBoxSubScene::getNumCompute(void) const{
-	return this->sequences[ProgramPipeline::COMPUTE_SHADER].size();
-}
+int SandBoxSubScene::getNumCompute(void) const { return this->sequences[ProgramPipeline::COMPUTE_SHADER].size(); }
 
-const UniformLocation *SandBoxSubScene::getUniformLocation(int uid) const {
-	return &this->cachedUniforms[uid];
-}
+const UniformLocation *SandBoxSubScene::getUniformLocation(int uid) const { return &this->cachedUniforms[uid]; }
 
-UniformLocation* SandBoxSubScene::getUniformLocation(int uid){
-	return &this->cachedUniforms[uid];
-}
+UniformLocation *SandBoxSubScene::getUniformLocation(int uid) { return &this->cachedUniforms[uid]; }
 
-FragGraphicUniform *SandBoxSubScene::getFragUniform(void) {
-	return &this->uniforms;
-}
+FragGraphicUniform *SandBoxSubScene::getFragUniform(void) { return &this->uniforms; }
 
 const std::vector<Texture::MapTarget> &SandBoxSubScene::getComputeMapTargets(void) const {
 	return this->computeMapTargets;
 }
 
-const std::vector<Texture::Format> &SandBoxSubScene::getComputeFormats(void) const {
-	return this->computeFormats;
-}
+const std::vector<Texture::Format> &SandBoxSubScene::getComputeFormats(void) const { return this->computeFormats; }
 
-const int* SandBoxSubScene::getComputeLocalWorkGroup(int index){
-
-}
+const int *SandBoxSubScene::getComputeLocalWorkGroup(int index) {}
 
 void SandBoxSubScene::updateAllUniformLocations(void) {
 
@@ -148,29 +130,25 @@ void SandBoxSubScene::updateAllUniformLocations(void) {
 	}
 }
 
-SandBoxSubScene::~SandBoxSubScene(void) {
-	/*  Decrease references. */
-}
+SandBoxSubScene::~SandBoxSubScene(void) { /*  Decrease references. */ }
 
-const std::vector<Texture *> &SandBoxSubScene::getTextures(void) const {
-	return this->textures;
-}
+const std::vector<Texture *> &SandBoxSubScene::getTextures(void) const { return this->textures; }
 
 //
 ////TODO add for fetching the local variable size of the local group.
 ////TODO see if can be set manually.
 ///*  Update the compute dispatch buffer.*/
-//IndirectDispatch dispatch = {
+// IndirectDispatch dispatch = {
 //		.num_groups_x = (unsigned int) (width / 16),
 //		.num_groups_y = (unsigned int) (height / 16),
 //		.num_groups_z = 1
 //};
 ////TODO relocate to sandbox scene object.
-//void *dispatchBuf = this->computeIndirect->mapBuffer(Buffer::MapTarget::eWrite | Buffer::MapTarget::eNoSync, 0,
+// void *dispatchBuf = this->computeIndirect->mapBuffer(Buffer::MapTarget::eWrite | Buffer::MapTarget::eNoSync, 0,
 //                                                     sizeof(IndirectDispatch));
 ////IndirectDispatch* dispatch = (IndirectDispatch*)dispatchBuf;
-//for(int i = 0; i < 0; i++){
+// for(int i = 0; i < 0; i++){
 //
 //}
-//memcpy(dispatchBuf, &dispatch, sizeof(dispatch));
-//this->computeIndirect->unMapBuffer();
+// memcpy(dispatchBuf, &dispatch, sizeof(dispatch));
+// this->computeIndirect->unMapBuffer();

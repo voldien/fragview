@@ -1,36 +1,36 @@
-#include"FragView.h"
-#include"OptionDicSet.h"
-#include"RenderPipeline/RenderPipelineSettings.h"
+#include "FragView.h"
+#include "OptionDicSet.h"
 #include "RenderPipeline/RenderPipelineForward.h"
-#include"SandBoxSubScene.h"
-#include"RenderPipelineSandBox.h"
-#include"ShaderLoader.h"
-#include<Scene/Scene.h>
-#include<FileNotify.h>
-#include<Core/IO/ZipFileSystem.h>
-#include<cassert>
-#include<Utils/TextureUtil.h>
-#include<Utils/ShaderUtil.h>
-#include<Utils/StringUtil.h>
+#include "RenderPipeline/RenderPipelineSettings.h"
+#include "RenderPipelineSandBox.h"
+#include "Renderer/RenderDesc.h"
+#include "Renderer/RendererFactory.h"
+#include "Renderer/ViewPort.h"
+#include "SandBoxSubScene.h"
+#include "Scene/Scene.h"
+#include "ShaderLoader.h"
+#include "UserEvent.h"
 #include <Asset/AssetHandler.h>
-#include <Scene/SceneFactory.h>
-#include <Core/IO/FileSystem.h>
-#include <Renderer/Query.h>
-#include <FontFactory.h>
 #include <Core/IO/FileIO.h>
-#include"Renderer/RendererFactory.h"
-#include"Scene/Scene.h"
-#include"UserEvent.h"
-#include"Renderer/ViewPort.h"
-#include"Renderer/RenderDesc.h"
-#include<HpmCpp.h>
+#include <Core/IO/FileSystem.h>
+#include <Core/IO/ZipFileSystem.h>
 #include <Core/SystemInfo.h>
-#include<SDL2/SDL.h>
+#include <Exception/InvalidArgumentException.h>
+#include <Exception/NotSupportedException.h>
+#include <FileNotify.h>
+#include <FontFactory.h>
+#include <HpmCpp.h>
+#include <Renderer/Query.h>
+#include <SDL2/SDL.h>
 #include <Scene/Scene.h>
+#include <Scene/Scene.h>
+#include <Scene/SceneFactory.h>
+#include <Utils/ShaderUtil.h>
+#include <Utils/StringUtil.h>
+#include <Utils/TextureUtil.h>
 #include <Video/VideoFactory.h>
 #include <audio/AudioFactory.h>
-#include <Exception/NotSupportedException.h>
-#include <Exception/InvalidArgumentException.h>
+#include <cassert>
 
 using namespace fragcore;
 using namespace fragengine;
@@ -49,7 +49,7 @@ FragView::FragView(int argc, const char **argv) {
 	this->notify->start();
 
 	/*  Print debug.    */
-	if (config->get<bool>("debug")){
+	if (config->get<bool>("debug")) {
 		Log::log(Log::Debug, "Configuration internal value tree\n");
 		config->printTable();
 	}
@@ -59,8 +59,8 @@ FragView::~FragView(void) {
 
 	const IConfig &resourceConfig = this->config->getSubConfig("resource-settings");
 	if (this->config && resourceConfig.get<bool>("save-configuration")) {
-		IO *fileIO = FileSystem::getFileSystem()->openFile(resourceConfig.get<const char *>("dump-configuration"),
-		                                                   IO::WRITE);
+		IO *fileIO =
+			FileSystem::getFileSystem()->openFile(resourceConfig.get<const char *>("dump-configuration"), IO::WRITE);
 		Ref<IO> ref_io = Ref<IO>(fileIO);
 		/*  TODO  */
 
@@ -84,7 +84,7 @@ FragView::~FragView(void) {
 	/*  Reduce reference and delete resources.  */
 	if (this->renderer->deincreemnt())
 		delete *this->renderer;
-	//delete this->scene->getGLSLSandBoxScene();
+	// delete this->scene->getGLSLSandBoxScene();
 	delete this->scene;
 	delete this->notify;
 	delete this->config;
@@ -120,16 +120,16 @@ void FragView::init(int argc, const char **argv) {
 		throw RuntimeException(fvformatf("failed to initialize SDL library : %d - %s", status, SDL_GetError()));
 
 	/*  Initialize HPM.  */
-	if (!Hpm::init((Hpm::HPMSIMD) this->config->get<int>("SIMD")))
+	if (!Hpm::init((Hpm::HPMSIMD)this->config->get<int>("SIMD")))
 		throw RuntimeException("Failed to initialize the hpm library.");
 	Log::log(Log::Verbose, "HPM SIMD using: %s\n", hpm_get_simd_symbol(hpm_get_simd()));
 
 	/*  Create rendering interface. */
 	const IConfig &renderConfig = config->getSubConfig("render-driver");
 	this->renderer = Ref<IRenderer>(
-			RenderingFactory::createRendering(config->get<const char *>("renderer-dynamicInterface"), &renderConfig));
+		RenderingFactory::createRendering(config->get<const char *>("renderer-dynamicInterface"), &renderConfig));
 	Log::log(Log::Verbose, "Loading Renderer: %s-%s\n", (*this->renderer)->getName().c_str(),
-	         (*this->renderer)->getVersion());
+			 (*this->renderer)->getVersion());
 	Log::log(Log::Verbose, "API Internal API version: %s\n", (*this->renderer)->getAPIVersion());
 	(*this->renderer)->setVSync(renderConfig.get<bool>("v-sync"));
 
@@ -140,10 +140,10 @@ void FragView::init(int argc, const char **argv) {
 	/*  Create window - default position and size.  */
 	const IConfig &windowConfig = this->config->getSubConfig("render-window-settings");
 	this->createWindow(windowConfig.get<int>("screen-x"), windowConfig.get<int>("screen-y"),
-	                   windowConfig.get<int>("screen-width"), windowConfig.get<int>("screen-height"));
+					   windowConfig.get<int>("screen-width"), windowConfig.get<int>("screen-height"));
 }
 
-void FragView::loadDefaultSceneAsset(void){
+void FragView::loadDefaultSceneAsset(void) {
 	/*	*/
 	Capability capability;
 	(*this->renderer)->getCapability(&capability);
@@ -164,7 +164,8 @@ void FragView::loadDefaultSceneAsset(void){
 	/*	Search for the file.	*/
 	const char *internal_asset_filename = resourceConfig.get<const char *>("fragview-internal-shaders-files");
 	Log::log(Log::Verbose, "Reading asset file: %s\n", internal_asset_filename);
-	const char *apppath = fvformatf("%s/%s", resourceConfig.get<const char *>("shaddir"), internal_asset_filename).c_str();
+	const char *apppath =
+		fvformatf("%s/%s", resourceConfig.get<const char *>("shaddir"), internal_asset_filename).c_str();
 	std::string fullPath = FileSystem::getAbsolutePath(apppath);
 	if (FileSystem::getFileSystem()->exists(internal_asset_filename))
 		internal_zip_io = Ref<IO>(FileSystem::getFileSystem()->openFile(internal_asset_filename, IO::READ));
@@ -175,13 +176,12 @@ void FragView::loadDefaultSceneAsset(void){
 			fvformatf("Could not find internal resources for default shaders : %s", internal_asset_filename));
 	internalAsset = ZipFileSystem::createZipFileObject(internal_zip_io, this->sch);
 
-	//TODO add support.
+	// TODO add support.
 	// Ref<IO> fontIO = Ref<IO>(internalAsset->openFile("DroidSansFallback.ttf", IO::READ));
 	// fontIO->seek(0, IO::Seek::SET);
 	// FontFactory::createSDFFont(this->renderer, fontIO, 10);
 
-	if (useSandBox)
-	{
+	if (useSandBox) {
 		IConfig &sandBoxSettings = this->config->getSubConfig("render-sandbox-graphic-settings");
 		IConfig &sandboxConfig = this->config->getSubConfig("sandbox");
 
@@ -221,26 +221,22 @@ void FragView::loadDefaultSceneAsset(void){
 
 		// 		fragGraphicUniform->time.time = 0.0f;
 		// 		fragGraphicUniform->time.deltaTime = 0.0f;
-		
-		//this->scene->getGLSLSandBoxScene();
+
+		// this->scene->getGLSLSandBoxScene();
 
 		/*  TODO add internal verification of asset if enabled.    */
 
 		bool internalShaderNotLoaded = false;
 		const char *cache_directory = resourceConfig.get<const char *>("cache-directory");
-		//TODO determine if directory or filepath.
+		// TODO determine if directory or filepath.
 		std::string shader_cache_filepath = fvformatf("%s/shader-cache.json", cache_directory);
-		if (this->config->get<bool>("use-cache-shaders"))
-		{
+		if (this->config->get<bool>("use-cache-shaders")) {
 			IConfig shaderCache;
-			try
-			{
-				//TODO
-				//shaderCache.parseConfigFile(Ref<IO>(NULL), IConfig::JSON);
+			try {
+				// TODO
+				// shaderCache.parseConfigFile(Ref<IO>(NULL), IConfig::JSON);
 				internalShaderNotLoaded = true;
-			}
-			catch (const IException &ex)
-			{
+			} catch (const IException &ex) {
 				internalShaderNotLoaded = false;
 			}
 		}
@@ -248,20 +244,15 @@ void FragView::loadDefaultSceneAsset(void){
 		/*  */
 		ASyncHandle displayFragV = 0;
 		ASyncHandle displayFragF = 0;
-		if (!internalShaderNotLoaded)
-		{
+		if (!internalShaderNotLoaded) {
 			/*  Load default display shader.    */
-			if (supportedLanguages & GLSL)
-			{
+			if (supportedLanguages & GLSL) {
 				displayFragV = internalAsset->openASyncFile("shaders/glsl/display.vert", IO::READ);
 				displayFragF = internalAsset->openASyncFile("shaders/glsl/display.frag", IO::READ);
-			}
-			else if (supportedLanguages & SPIRV)
-			{
+			} else if (supportedLanguages & SPIRV) {
 				displayFragV = internalAsset->openASyncFile("shaders/spirv/displayV.spv", IO::READ);
 				displayFragF = internalAsset->openASyncFile("shaders/spirv/displayF.spv", IO::READ);
-			}
-			else
+			} else
 				throw NotSupportedException(fvformatf("Non-Supported shader for language %d", supportedLanguages));
 
 			/*  Invoke async load.  */
@@ -269,17 +260,16 @@ void FragView::loadDefaultSceneAsset(void){
 			internalAsset->asyncWriteFile(displayFragF, NULL, 0, NULL);
 		}
 
-		//ShaderUtil::loadShader
+		// ShaderUtil::loadShader
 
 		/*  */
 		// Get local share directory. TODO
 		//"binary-program"
-		//for(int i = 0; i < sandboxConfig.get())
+		// for(int i = 0; i < sandboxConfig.get())
 
 		/*  Create shaders. */
 		const int nShadersInSandBox = sandboxConfig.get<int>("num_shaders");
-		for (int i = 0; i < sandboxConfig.get<int>("num_shaders"); i++)
-		{
+		for (int i = 0; i < sandboxConfig.get<int>("num_shaders"); i++) {
 			ProgramPipeline *shader;
 
 			/*  Check if fragment shader is supported.  */
@@ -292,18 +282,17 @@ void FragView::loadDefaultSceneAsset(void){
 
 			/*  Load fragment program.  */
 			ShaderLoader::loadFragmentProgramPipeline(ref, GLSL, (*this->renderer), &shader);
-			//scene->getGLSLSandBoxScene()->addShader(shader);
+			// scene->getGLSLSandBoxScene()->addShader(shader);
 			Log::log(Log::Verbose, "Loaded Shader: %s\n", path.c_str());
 
-			//this->notify->registerAsset(path.c_str(), shader, eShader);
+			// this->notify->registerAsset(path.c_str(), shader, eShader);
 
 			delete ref;
 		}
 
 		/*  Create compute shaders.    */
 		const int nComputeInSandBox = sandboxConfig.get<int>("num_compute");
-		for (int i = 0; i < sandboxConfig.get<int>("num_compute"); i++)
-		{
+		for (int i = 0; i < sandboxConfig.get<int>("num_compute"); i++) {
 			ProgramPipeline *compute;
 
 			/*  Check if compute shader is supported.  */
@@ -314,42 +303,38 @@ void FragView::loadDefaultSceneAsset(void){
 
 			IO *ref = FileSystem::getFileSystem()->openFile(path.c_str(), IO::Mode::READ);
 			/*  */
-			//ShaderUtil::loadComputeShader(ref, *this->renderer, &compute);
-			//scene->getGLSLSandBoxScene()->addCompute(compute);
+			// ShaderUtil::loadComputeShader(ref, *this->renderer, &compute);
+			// scene->getGLSLSandBoxScene()->addCompute(compute);
 			Log::log(Log::Verbose, "Loaded Compute Shader: %s\n", path.c_str());
 
-			//this->notify->registerAsset(path.c_str(), compute, eShader);
+			// this->notify->registerAsset(path.c_str(), compute, eShader);
 
 			delete ref;
 		}
 
 		/*  Create textures.    */
-		//TODO add video texture support.
+		// TODO add video texture support.
 		const int nTexturesInSandBox = sandboxConfig.get<int>("num_textures");
-		for (int i = 0; i < capability.sMaxTextureUnitActive; i++)
-		{
+		for (int i = 0; i < capability.sMaxTextureUnitActive; i++) {
 			Texture *texture;
 			const char *path = NULL;
 			const std::string tex_key = fvformatf("texture%d", i);
-			if (sandboxConfig.isSet(tex_key.c_str()))
-			{
+			if (sandboxConfig.isSet(tex_key.c_str())) {
 				path = sandboxConfig.get<const char *>(tex_key);
-				if (path)
-				{
+				if (path) {
 					/*  Determine file type.    */
 					const char *ext = FileSystem::getFileExtension(path);
 
 					TextureUtil::loadTexture(path, *this->renderer, &texture);
-					//scene->getGLSLSandBoxScene()->addTexture(texture);
+					// scene->getGLSLSandBoxScene()->addTexture(texture);
 					Log::log(Log::Verbose, "Loaded texture: %s\n", path);
 				}
 
-				//this->notify->registerAsset(path, texture, eTexture);
+				// this->notify->registerAsset(path, texture, eTexture);
 			}
 		}
 
-		if (!internalShaderNotLoaded)
-		{
+		if (!internalShaderNotLoaded) {
 			/*  Close async.    */
 			internalAsset->asyncClose(displayFragV);
 			internalAsset->asyncClose(displayFragF);
@@ -361,13 +346,11 @@ void FragView::loadDefaultSceneAsset(void){
 			/*  Load shaders.   */
 		}
 
-		//TODO add support for caching shaders. -- as json files.
-		if (this->config->get<bool>("cache-shaders"))
-		{
+		// TODO add support for caching shaders. -- as json files.
+		if (this->config->get<bool>("cache-shaders")) {
 			IConfig internaCache;
 			internaCache.setName("shader-cache");
-			for (int i = 0; i < sandBoxSubScene->getNumShaders(); i++)
-			{
+			for (int i = 0; i < sandBoxSubScene->getNumShaders(); i++) {
 				Shader *shader = sandBoxSubScene->getShader(i)->getShader(ProgramPipeline::VERTEX_SHADER);
 
 				IConfig &shaderCache = internaCache.getSubConfig(shader->getName());
@@ -381,13 +364,11 @@ void FragView::loadDefaultSceneAsset(void){
 			Ref<IO> f = Ref<IO>(FileSystem::getFileSystem()->openFile(shader_cache_filepath.c_str(), IO::WRITE));
 			internaCache.save(f, IConfig::JSON);
 		}
-	}
-	else
-	{
+	} else {
 		IConfig &sceneConfig = this->config->getSubConfig(CONFIG_SCENE);
 
 		/*  Create 3D view scene.   */
-		//this->scene = SceneFactory::createScene(*this->renderer, SceneFactory::eWorldSpace);
+		// this->scene = SceneFactory::createScene(*this->renderer, SceneFactory::eWorldSpace);
 		this->renderpipeline = Ref<IRenderPipelineBase>(new RenderPipelineForward(this->renderer));
 
 		// Read from options for loading the scene.
@@ -405,21 +386,15 @@ void FragView::loadDefaultSceneAsset(void){
 	delete internalAsset;
 
 	// Assert the variables
-	//assert(this->scene && *this->renderpipeline);
+	// assert(this->scene && *this->renderpipeline);
 
 	loadCachedShaders();
 	loadShaders();
 	cacheShaders();
 }
-void FragView::cacheShaders(void){
-
-}
-void FragView::loadCachedShaders(void){
-
-}
-void FragView::loadShaders(void){
-
-}
+void FragView::cacheShaders(void) {}
+void FragView::loadCachedShaders(void) {}
+void FragView::loadShaders(void) {}
 
 void FragView::createWindow(int x, int y, int width, int height) {
 	assert(*this->renderer);
@@ -438,7 +413,7 @@ void FragView::createWindow(int x, int y, int width, int height) {
 		iconpath = iconFileName;
 		foundIcon = true;
 	} else {
-		//TODO determine based on platform for which directory to search.
+		// TODO determine based on platform for which directory to search.
 		/*  Share directory.    */
 		iconpath = fvformatf("%s/%s", resourceConfig.get<const char *>("shaddir"), iconFileName);
 		if (fileSystem->exists(iconpath.c_str())) {
@@ -447,7 +422,7 @@ void FragView::createWindow(int x, int y, int width, int height) {
 	}
 
 	/*  */
-	//TODO determine if async supported.
+	// TODO determine if async supported.
 	ASyncHandle iconHandle = NULL;
 	if (foundIcon) {
 		iconHandle = fileSystem->openASyncFile(iconpath.c_str(), IO::READ);
@@ -455,7 +430,7 @@ void FragView::createWindow(int x, int y, int width, int height) {
 	}
 
 	/*  Primary display.    */
-	Display* display = WindowManager::getInstance()->getDisplay(0);
+	Display *display = WindowManager::getInstance()->getDisplay(0);
 
 	/*  Compute screen size and location if default value provided.   */
 	if (width == -1)
@@ -469,22 +444,20 @@ void FragView::createWindow(int x, int y, int width, int height) {
 
 	/*  Create window.  */
 	this->rendererWindow = renderer->createWindow(x, y, width, height);
-	
+
 	// this->rendererWindow = new SDLRendererWindow();
 	// this->rendererWindow = (*this->renderer)->createWindow(x, y, width, height, rendererWindow);
 	assert(this->rendererWindow);
 
-//	(*this->renderer)->setCurrentWindow(this->rendererWindow);
+	//	(*this->renderer)->setCurrentWindow(this->rendererWindow);
 
 	/*  Update default viewport.    */
 	(*this->renderer)->getView(0)->setDimensions(0, 0, width, height);
 
 	/*  Set current window title.   */
 	std::string title = fvformatf("FragView - %s : %s - %s", FragView::getVersion(),
-	                              (*this->renderer)->getName().c_str(),
-	                              (*this->renderer)->getAPIVersion());
+								  (*this->renderer)->getName().c_str(), (*this->renderer)->getAPIVersion());
 	this->rendererWindow->setTitle(title.c_str());
-
 
 	/*  Set window properties.  */
 	const IConfig &windowConfig = this->config->getSubConfig("render-window-settings");
@@ -503,19 +476,18 @@ void FragView::createWindow(int x, int y, int width, int height) {
 		this->rendererWindow->setMinimumSize(min_w, min_h);
 	}
 
-
 	/*  Load icon.  */
 	if (foundIcon) {
 		unsigned int iconw, iconh, len;
 		try {
-			//TODO extract IO status.
+			// TODO extract IO status.
 			fileSystem->asyncWait(iconHandle);
 			ASync::IOStatus status = fileSystem->getIOStatus(iconHandle);
 			fileSystem->asyncClose(iconHandle);
 
 			void *icon = TextureUtil::loadTextureData(iconBuffer, status.nbytes, &iconw, &iconh);
 			if (icon && iconw > 0 && iconh > 0) {
-				//TODO change type once it has been decided.
+				// TODO change type once it has been decided.
 				rendererWindow->setIcon(icon);
 			}
 			free(icon);
@@ -526,7 +498,7 @@ void FragView::createWindow(int x, int y, int width, int height) {
 	}
 
 	/*  Display window. */
-	this->rendererWindow->setSize(width, height);   // Force resize event to be poll on start.
+	this->rendererWindow->setSize(width, height); // Force resize event to be poll on start.
 	this->rendererWindow->show();
 }
 
@@ -538,146 +510,142 @@ void FragView::run(void) {
 	unsigned int height;
 
 	/*	*/
-	bool isAlive = true;                    /*	*/
-	bool visible = true;                    /*	*/
+	bool isAlive = true; /*	*/
+	bool visible = true; /*	*/
 
 	/*  */
-	IConfig& windowConfig = config->getSubConfig("render-window-settings");
+	IConfig &windowConfig = config->getSubConfig("render-window-settings");
 	bool renderInBackground = true;
 	const bool renderOutOfFoucs = windowConfig.get<bool>("background-rendering");
 
 	// Once everything loaded. Focus the program.
-	//this->scene->getTime()->start();
+	// this->scene->getTime()->start();
 	this->rendererWindow->focus();
 
 	FragGraphicUniform tmp;
 	/*  Main logic loop.    */
 	while (isAlive) {
-		//Scene *currentScene = this->scene;
+		// Scene *currentScene = this->scene;
 		SandBoxSubScene *sandbox = NULL;
-		//currentScene->getGLSLSandBoxScene();
-		FragGraphicUniform *uniform = &tmp;//TODO resolve sandbox->getFragUniform();
+		// currentScene->getGLSLSandBoxScene();
+		FragGraphicUniform *uniform = &tmp; // TODO resolve sandbox->getFragUniform();
 
 		while (SDL_PollEvent(&event)) {
 
 			switch (event.type) {
-				case SDL_WINDOWEVENT:
-					switch (event.window.event) {
-						case SDL_WINDOWEVENT_SIZE_CHANGED:
-							//TODO remove , changed so that it passes throught the event controller.
-							width = event.window.data1;
-							height = event.window.data2;
-							uniform->window.width = (float) width;
-							uniform->window.height = (float) height;
-							Log::log(Log::Debug, "viewport resized: %dx%d\n", width, height);
-							//this->renderpipeline->setViewport(width, height, *this->renderer);
-							break;
-						case SDL_WINDOWEVENT_MOVED:
-							uniform->window.x = (float) event.window.data1;
-							uniform->window.y = (float) event.window.data2;
-							break;
-						case SDL_WINDOWEVENT_HIDDEN:
-							visible = false;
-							break;
-						case SDL_WINDOWEVENT_EXPOSED:
-						case SDL_WINDOWEVENT_SHOWN:
-							visible = true;
-							break;
-						case SDL_WINDOWEVENT_ENTER:
-							renderInBackground = renderOutOfFoucs;
-							break;
-						case SDL_WINDOWEVENT_LEAVE:
-							renderInBackground = renderOutOfFoucs;
-							break;
-						case SDL_WINDOWEVENT_CLOSE:
-							return;    /*	Quit application.	*/
-						case SDL_WINDOWEVENT_HIT_TEST:
-							break;
-						default:
-							break;
-					}
+			case SDL_WINDOWEVENT:
+				switch (event.window.event) {
+				case SDL_WINDOWEVENT_SIZE_CHANGED:
+					// TODO remove , changed so that it passes throught the event controller.
+					width = event.window.data1;
+					height = event.window.data2;
+					uniform->window.width = (float)width;
+					uniform->window.height = (float)height;
+					Log::log(Log::Debug, "viewport resized: %dx%d\n", width, height);
+					// this->renderpipeline->setViewport(width, height, *this->renderer);
 					break;
-				case SDL_QUIT:
-					isAlive = SDL_FALSE;
+				case SDL_WINDOWEVENT_MOVED:
+					uniform->window.x = (float)event.window.data1;
+					uniform->window.y = (float)event.window.data2;
 					break;
-				case SDL_KEYDOWN:
-					//TODO redidect to command buffer.
-					if (event.key.keysym.sym == SDLK_RETURN && (event.key.keysym.mod & SDLK_LCTRL)) {
-						if (!windowConfig.get<int>("isFullscreen")) {
-							this->rendererWindow->setFullScreen(1);
-							windowConfig.set<int>("isFullscreen", 1);
-						} else {
-							this->rendererWindow->setFullScreen(0);
-							windowConfig.set<int>("isFullscreen", 0);
-						}
-					} else if (event.key.keysym.sym == SDLK_F12) {
-						/* Save current framebuffer.  */
-						FrameBuffer *def = (*this->renderer)->getDefaultFramebuffer(this->rendererWindow);
-						TextureUtil::saveTexture(fvformatf("screen - %s.png", Time::getDate()).c_str(),
-						                         *this->renderer, def->getAttachment(0));
-
-					} else {
-
-					}
+				case SDL_WINDOWEVENT_HIDDEN:
+					visible = false;
 					break;
-				case SDL_KEYUP:
+				case SDL_WINDOWEVENT_EXPOSED:
+				case SDL_WINDOWEVENT_SHOWN:
+					visible = true;
 					break;
-				case SDL_MOUSEBUTTONDOWN:
+				case SDL_WINDOWEVENT_ENTER:
+					renderInBackground = renderOutOfFoucs;
 					break;
-				case SDL_MOUSEMOTION:
-					uniform->inputs.x = event.motion.x;
-					uniform->inputs.y = event.motion.y;
-					uniform->inputs.ax = event.motion.xrel;
-					uniform->inputs.ay = event.motion.yrel;
+				case SDL_WINDOWEVENT_LEAVE:
+					renderInBackground = renderOutOfFoucs;
 					break;
-				case SDL_MOUSEWHEEL: {
-					const float delta = 0.01f;
-					uniform->inputs.wheel += (float) event.wheel.y * delta;
-					uniform->inputs.wheelacc = (float) event.wheel.y * delta;
-				}
-					break;
-				case SDL_JOYAXISMOTION:
-					uniform->inputs.ax = event.jaxis.value;
-					break;
-				case SDL_JOYBUTTONDOWN:
-					break;
-				case SDL_FINGERMOTION:
-					uniform->inputs.x = event.tfinger.x;
-					uniform->inputs.y = event.tfinger.y;
-					uniform->inputs.ax = event.tfinger.dx;
-					uniform->inputs.ay = event.tfinger.dy;
-					break;
-				case SDL_DROPFILE: {
-					/*  Determine what file.  */
-					/*  Send to task scheduler to deal with.    */
-					//AssetHandler::handleAssetDrop(event.drop.file);//TODO improve.
-					event.drop.file;
-					this->sch;
-				}
-					break;
-				case SDL_USEREVENT: {
-					if (event.user.code == ASSET_UPDATE) {
-						/*  Asset notification handle current graphic context. */
-						FileNotificationEvent *objectEvent = (FileNotificationEvent *) event.user.data1;
-						try {
-							//AssetHandler::handleAssetEvent(objectEvent);
-						} catch (RuntimeException &err) {
-							Log::log(Log::Error, err.what());
-						}
-						Log::log(Log::Verbose, "Updating %s\n", objectEvent->path);
-						this->notify->eventDone(objectEvent);
-						sandbox->updateAllUniformLocations();
-					}
-				}
+				case SDL_WINDOWEVENT_CLOSE:
+					return; /*	Quit application.	*/
+				case SDL_WINDOWEVENT_HIT_TEST:
 					break;
 				default:
 					break;
+				}
+				break;
+			case SDL_QUIT:
+				isAlive = SDL_FALSE;
+				break;
+			case SDL_KEYDOWN:
+				// TODO redidect to command buffer.
+				if (event.key.keysym.sym == SDLK_RETURN && (event.key.keysym.mod & SDLK_LCTRL)) {
+					if (!windowConfig.get<int>("isFullscreen")) {
+						this->rendererWindow->setFullScreen(1);
+						windowConfig.set<int>("isFullscreen", 1);
+					} else {
+						this->rendererWindow->setFullScreen(0);
+						windowConfig.set<int>("isFullscreen", 0);
+					}
+				} else if (event.key.keysym.sym == SDLK_F12) {
+					/* Save current framebuffer.  */
+					FrameBuffer *def = (*this->renderer)->getDefaultFramebuffer(this->rendererWindow);
+					TextureUtil::saveTexture(fvformatf("screen - %s.png", Time::getDate()).c_str(), *this->renderer,
+											 def->getAttachment(0));
+
+				} else {
+				}
+				break;
+			case SDL_KEYUP:
+				break;
+			case SDL_MOUSEBUTTONDOWN:
+				break;
+			case SDL_MOUSEMOTION:
+				uniform->inputs.x = event.motion.x;
+				uniform->inputs.y = event.motion.y;
+				uniform->inputs.ax = event.motion.xrel;
+				uniform->inputs.ay = event.motion.yrel;
+				break;
+			case SDL_MOUSEWHEEL: {
+				const float delta = 0.01f;
+				uniform->inputs.wheel += (float)event.wheel.y * delta;
+				uniform->inputs.wheelacc = (float)event.wheel.y * delta;
+			} break;
+			case SDL_JOYAXISMOTION:
+				uniform->inputs.ax = event.jaxis.value;
+				break;
+			case SDL_JOYBUTTONDOWN:
+				break;
+			case SDL_FINGERMOTION:
+				uniform->inputs.x = event.tfinger.x;
+				uniform->inputs.y = event.tfinger.y;
+				uniform->inputs.ax = event.tfinger.dx;
+				uniform->inputs.ay = event.tfinger.dy;
+				break;
+			case SDL_DROPFILE: {
+				/*  Determine what file.  */
+				/*  Send to task scheduler to deal with.    */
+				// AssetHandler::handleAssetDrop(event.drop.file);//TODO improve.
+				event.drop.file;
+				this->sch;
+			} break;
+			case SDL_USEREVENT: {
+				if (event.user.code == ASSET_UPDATE) {
+					/*  Asset notification handle current graphic context. */
+					FileNotificationEvent *objectEvent = (FileNotificationEvent *)event.user.data1;
+					try {
+						// AssetHandler::handleAssetEvent(objectEvent);
+					} catch (RuntimeException &err) {
+						Log::log(Log::Error, err.what());
+					}
+					Log::log(Log::Verbose, "Updating %s\n", objectEvent->path);
+					this->notify->eventDone(objectEvent);
+					sandbox->updateAllUniformLocations();
+				}
+			} break;
+			default:
+				break;
 			}
 		}
 
 		/*  */
-		//scene->getTime()->internalUpdate();
-		//uniform->time.time = scene->getTime()->timef();
+		// scene->getTime()->internalUpdate();
+		// uniform->time.time = scene->getTime()->timef();
 
 		// Update Object
 
@@ -693,7 +661,7 @@ void FragView::run(void) {
 
 		// Update skinned.
 		this->logicSch->wait();
-//		schWaitTask(*this->logicSch);
+		//		schWaitTask(*this->logicSch);
 
 		/*	render only if visible of configure too.	*/
 		if (visible || renderInBackground) {
@@ -709,6 +677,4 @@ void FragView::run(void) {
 	}
 }
 
-const char *FragView::getVersion(void) {
-	return FV_VERSION;
-}
+const char *FragView::getVersion(void) { return FV_VERSION; }

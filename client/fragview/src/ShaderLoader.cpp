@@ -1,19 +1,19 @@
-#include"ShaderLoader.h"
-#include<Utils/ShaderUtil.h>
-#include<Renderer/ProgramPipeline.h>
+#include "ShaderLoader.h"
+#include <Renderer/ProgramPipeline.h>
+#include <Utils/ShaderUtil.h>
 using namespace fragview;
 using namespace fragcore;
 
 const char *vertexs[] = {
-	NULL,						  /*  None shader language.   */
-	//gc_shader_display_vs,		  /*  GLSL.   */
+	NULL, /*  None shader language.   */
+	// gc_shader_display_vs,		  /*  GLSL.   */
 	//(const char *)vertex_display, /*  SPIRV.  */
-	NULL,						  /*  CLC.    */
-	NULL,						  /*  HLSL.   */
+	NULL, /*  CLC.    */
+	NULL, /*  HLSL.   */
 };
 const unsigned int vSizes[] = {
 	NULL, /*  None shader language.   */
-	//gc_shader_display_vs_size,
+	// gc_shader_display_vs_size,
 	NULL,
 	NULL,
 	NULL,
@@ -27,15 +27,15 @@ const unsigned int vShaderType[] = {
 };
 
 const char *fragments[] = {
-	NULL,							/*  None shader language.   */
-	//gc_shader_display_fs,			/*  GLSL.   */
+	NULL, /*  None shader language.   */
+	// gc_shader_display_fs,			/*  GLSL.   */
 	//(const char *)fragment_display, /*  SPIRV.  */
-	NULL,							/*  CLC.    */
-	NULL,							/*  HLSL.   */
+	NULL, /*  CLC.    */
+	NULL, /*  HLSL.   */
 };
 const unsigned int fSizes[] = {
 	NULL, /*  None shader language.   */
-	//gc_shader_display_fs_size,
+	// gc_shader_display_fs_size,
 	NULL,
 	NULL,
 	NULL,
@@ -48,10 +48,9 @@ const unsigned int fShaderType[] = {
 	eSourceCode,   /*  HLSL.   */
 };
 
-//TODO relocate to fragview.
+// TODO relocate to fragview.
 void ShaderLoader::loadFragmentProgramPipeline(IO *fragIO, ShaderLanguage language, IRenderer *renderer,
-											 ProgramPipeline **pshader)
-{
+											   ProgramPipeline **pshader) {
 
 	char *fragment;
 
@@ -65,7 +64,7 @@ void ShaderLoader::loadFragmentProgramPipeline(IO *fragIO, ShaderLanguage langua
 
 	/*  Load fragment source file.  */
 	long int size = 0;
-	//IOUtil::loadStringMem(fragIO, &fragment);
+	// IOUtil::loadStringMem(fragIO, &fragment);
 	ShaderUtil::ShaderObject shaderObjectF = {
 		.buf = fragment,
 		.size = size,
@@ -78,8 +77,7 @@ void ShaderLoader::loadFragmentProgramPipeline(IO *fragIO, ShaderLanguage langua
 	free(fragment);
 }
 
-void ShaderLoader::loadDisplayShader(IRenderer *renderer, ProgramPipeline **pProgramPipeline)
-{
+void ShaderLoader::loadDisplayShader(IRenderer *renderer, ProgramPipeline **pProgramPipeline) {
 
 	ShaderLanguage langauge = renderer->getShaderLanguage();
 
@@ -128,41 +126,26 @@ void ShaderLoader::loadDisplayShader(IRenderer *renderer, ProgramPipeline **pPro
 	ShaderUtil::loadProgramPipeline(&shaderObjectV, &shaderObjectF, NULL, NULL, NULL, renderer, pProgramPipeline);
 }
 
-void ShaderLoader::defaultUniformMap(ProgramPipeline *programPipeline)
-{
+void ShaderLoader::defaultUniformMap(ProgramPipeline *programPipeline) {
 
 	/*	Texture location.   */
 	/*  TODO relocate the constants to a seperate header.    */
-	static const ShaderLoader::DefaultTextureLocation texloc[] = {
-		{"texture0", 0},
-		{"texture1", 1},
-		{"texture2", 2},
-		{"texture3", 3},
-		{"texture4", 4},
-		{"texture5", 5},
-		{"texture6", 6},
-		{"texture7", 7},
-		{"texture8", 8},
-		{"texture9", 9},
-		{"texture10", 10},
-		{"texture11", 11},
-		{"texture12", 12},
-		{"texture13", 13},
-		{"texture14", 14},
-		{"texture15", 15},
-		{"diffuse0", 0},
-		{"world0", 1},
-		{"normal0", 2},
-		{"depth0", 3},
-		{"backbuffer", 10},
-		{0, 0}};
+	static const ShaderLoader::DefaultTextureLocation texloc[] = {{"texture0", 0},	  {"texture1", 1},
+																  {"texture2", 2},	  {"texture3", 3},
+																  {"texture4", 4},	  {"texture5", 5},
+																  {"texture6", 6},	  {"texture7", 7},
+																  {"texture8", 8},	  {"texture9", 9},
+																  {"texture10", 10},  {"texture11", 11},
+																  {"texture12", 12},  {"texture13", 13},
+																  {"texture14", 14},  {"texture15", 15},
+																  {"diffuse0", 0},	  {"world0", 1},
+																  {"normal0", 2},	  {"depth0", 3},
+																  {"backbuffer", 10}, {0, 0}};
 
 	/*  Iterate through each default uniforms.  */
 	DefaultTextureLocation *uniloc = (DefaultTextureLocation *)texloc;
-	while (uniloc->texname)
-	{
-		if (programPipeline->getLocation(uniloc->texname) >= 0)
-		{
+	while (uniloc->texname) {
+		if (programPipeline->getLocation(uniloc->texname) >= 0) {
 			programPipeline->setInt(programPipeline->getLocation(uniloc->texname), uniloc->loc);
 		}
 		uniloc++;

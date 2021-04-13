@@ -1,14 +1,14 @@
-#include"RenderPipelineSandBox.h"
-#include"SandBoxSubScene.h"
-#include"ShaderLoader.h"
-#include <Utils/ShaderUtil.h>
-#include <Utils/RenderTargetFactory.h>
+#include "RenderPipelineSandBox.h"
+#include "SandBoxSubScene.h"
+#include "ShaderLoader.h"
 #include <Renderer/Buffer.h>
-#include <Renderer/ViewPort.h>
 #include <Renderer/FrameBuffer.h>
-#include <Renderer/Query.h>
 #include <Renderer/ProgramPipeline.h>
+#include <Renderer/Query.h>
 #include <Renderer/Sync.h>
+#include <Renderer/ViewPort.h>
+#include <Utils/RenderTargetFactory.h>
+#include <Utils/ShaderUtil.h>
 
 using namespace fragview;
 using namespace fragengine;
@@ -16,31 +16,30 @@ using namespace fragcore;
 
 /*	Display quad.	*/
 const float gc_quad[4][3] = {
-		{-1.0f, -1.0f, 0.0f},
-		{-1.0f, 1.0f,  0.0f},
-		{1.0f,  -1.0f, 0.0f},
-		{1.0f,  1.0f,  0.0f},
+	{-1.0f, -1.0f, 0.0f},
+	{-1.0f, 1.0f, 0.0f},
+	{1.0f, -1.0f, 0.0f},
+	{1.0f, 1.0f, 0.0f},
 };
 
-extern void updateUniforms(Shader* shaderProgram, const UniformLocation* locations, const FragGraphicUniform *uniforms);
-void RenderPipelineSandBox::draw(Scene *scene, FrameBuffer *frame, IRenderer *render)
-{
+extern void updateUniforms(Shader *shaderProgram, const UniformLocation *locations, const FragGraphicUniform *uniforms);
+void RenderPipelineSandBox::draw(Scene *scene, FrameBuffer *frame, IRenderer *render) {
 
 	(*this->renderer)->clear(eColor | eDepth);
 	(*this->renderer)->clearColor(0.15f, 0.15f, 0.15f, 1.0f);
 	/*  Check if sandbox sub scene exists.  */
 	SandBoxSubScene *sandbox = NULL;
-	//scene->getGLSLSandBoxScene();
+	// scene->getGLSLSandBoxScene();
 
 	/*  TODO add rendering settings for handle the execution.   */
-	//TODO add fragment sampling.
+	// TODO add fragment sampling.
 	if (sandbox) {
 		const FragGraphicUniform *uniforms = sandbox->getFragUniform();
 		bool resultInFrameBuffer = false;
-		Texture* backTexture;
+		Texture *backTexture;
 
 		/*  Bind all textures.   */
-		if(sandbox->getNumTextures() > 0)
+		if (sandbox->getNumTextures() > 0)
 			this->renderer->bindTextures(0, sandbox->getTextures());
 
 		/*  Disable unnecessary rasterization functionalities.*/
@@ -59,9 +58,9 @@ void RenderPipelineSandBox::draw(Scene *scene, FrameBuffer *frame, IRenderer *re
 		for (int i = 0; i < sandbox->getNumShaders(); i++) {
 			/*  */
 			ProgramPipeline *shader = sandbox->getShader(i);
-			if(i == 0){
-				//this->frameBuffer->write();
-				//this->frameBuffer->clear(CLEARBITMASK::eColor);
+			if (i == 0) {
+				// this->frameBuffer->write();
+				// this->frameBuffer->clear(CLEARBITMASK::eColor);
 			}
 
 			/*  Get next framebuffer.   */
@@ -69,12 +68,12 @@ void RenderPipelineSandBox::draw(Scene *scene, FrameBuffer *frame, IRenderer *re
 				FrameBuffer *frame = *this->frameBuffer;
 				Texture *prevTexture = frame->getAttachment(nthPrevBoundAttachment);
 				Texture *currentTexture = frame->getAttachment(nthBoundAttachment);
-				FrameBuffer::BufferAttachment attachment = (FrameBuffer::BufferAttachment) (FrameBuffer::eColor0 +
-				                                                                            nthBoundAttachment);
+				FrameBuffer::BufferAttachment attachment =
+					(FrameBuffer::BufferAttachment)(FrameBuffer::eColor0 + nthBoundAttachment);
 
 				/*  */
-				frame->blend(FrameBuffer::BlendEqu::eAddition, FrameBuffer::BlendFunc::eSrcAlpha, FrameBuffer::BlendFunc::eOneMinusSrcAlpha,
-				             attachment);
+				frame->blend(FrameBuffer::BlendEqu::eAddition, FrameBuffer::BlendFunc::eSrcAlpha,
+							 FrameBuffer::BlendFunc::eOneMinusSrcAlpha, attachment);
 				frame->setDraw(attachment);
 				frame->bind();
 
@@ -85,12 +84,12 @@ void RenderPipelineSandBox::draw(Scene *scene, FrameBuffer *frame, IRenderer *re
 			}
 
 			/*  */
-			Shader* frag = shader->getShader(ProgramPipeline::FRAGMENT_SHADER);
+			Shader *frag = shader->getShader(ProgramPipeline::FRAGMENT_SHADER);
 			const UniformLocation *locations = sandbox->getUniformLocation(shader->getUID());
 			shader->bind();
 
 			/*  backbuffer. */
-			if(locations->backbuffer >= 0)
+			if (locations->backbuffer >= 0)
 				backTexture->bind(locations->backbuffer);
 			/*  Update dynamic variables. shader uniforms. */
 			if (locations->time >= 0)
@@ -109,7 +108,6 @@ void RenderPipelineSandBox::draw(Scene *scene, FrameBuffer *frame, IRenderer *re
 				frag->setVec2v(locations->pointer, 1, &uniforms->inputs.x);
 			if (locations->offset >= 0)
 				frag->setVec2v(locations->offset, 1, &uniforms->inputs.x);
-
 
 			/*  Draw the fragment shader.   */
 			this->quadDisplayIndirect->bind();
@@ -152,7 +150,6 @@ void RenderPipelineSandBox::draw(Scene *scene, FrameBuffer *frame, IRenderer *re
 
 				this->renderer->copyTexture(source, target);
 			} else {
-
 			}
 		}
 
@@ -161,9 +158,10 @@ void RenderPipelineSandBox::draw(Scene *scene, FrameBuffer *frame, IRenderer *re
 
 			/*  Get default framebuffer.    */
 			FrameBuffer *Default = frame;
-			//this->renderer->blit(*this->frameBuffer, Default, Texture::eBilinear);
-			//this->renderer->blit(this->frameBuffer, Default);//TODO relocate the responsiblity with the framebuffer blit.
-//
+			// this->renderer->blit(*this->frameBuffer, Default, Texture::eBilinear);
+			// this->renderer->blit(this->frameBuffer, Default);//TODO relocate the responsiblity with the framebuffer
+			// blit.
+			//
 			Default->write();
 
 			/*  Get the last texture render too.    */
@@ -182,13 +180,12 @@ void RenderPipelineSandBox::draw(Scene *scene, FrameBuffer *frame, IRenderer *re
 			} else {
 				this->renderer->drawInstance(*this->quadDisplay, 1);
 			}
-
 		}
 
-		//this->frameBuffer->write();
+		// this->frameBuffer->write();
 		/*  Render Font.    */
-		//this->font->getCharacter(0);
-		//this->font->getTexture()->bind(0);
+		// this->font->getCharacter(0);
+		// this->font->getTexture()->bind(0);
 	}
 }
 
@@ -215,7 +212,7 @@ RenderPipelineSandBox::~RenderPipelineSandBox(void) {
 		this->renderer->deleteBuffer(*this->computeIndirect);
 
 	/*  */
-	if(this->frameBuffer->deincreemnt())
+	if (this->frameBuffer->deincreemnt())
 		this->renderer->deleteFrameBuffer(*this->frameBuffer);
 
 	/*  Sync object.    */
@@ -228,17 +225,17 @@ RenderPipelineSandBox::~RenderPipelineSandBox(void) {
 
 void RenderPipelineSandBox::createFrameTexture(IRenderer *renderer, unsigned int width, unsigned height) {
 
-	//TODO add support for the configuration to change the size.
+	// TODO add support for the configuration to change the size.
 	if (*this->frameBuffer) {
 		if (this->frameBuffer->deincreemnt())
 			this->renderer->deleteFrameBuffer(*this->frameBuffer);
 	}
 
-	//TODO get and use the resolution scale.
+	// TODO get and use the resolution scale.
 	this->frameBuffer = Ref<FrameBuffer>(RenderTargetFactory::createColor(*this->renderer, width, height));
 	this->frameBuffer->setName("framebuffer");
 
-	if (this>supportComputeShader) {
+	if (this > supportComputeShader) {
 
 		/*  Create compute texture. */
 		TextureDesc computeTextureDesc = {};
@@ -291,33 +288,29 @@ void RenderPipelineSandBox::setRenderer(Ref<IRenderer> &renderer) {
 	this->supportComputeShader = false;
 }
 
-const Ref<IRenderer> &RenderPipelineSandBox::getRenderer(void) const {
-	return this->renderer;
-}
+const Ref<IRenderer> &RenderPipelineSandBox::getRenderer(void) const { return this->renderer; }
 
-Ref<IRenderer> RenderPipelineSandBox::getRenderer(void) {
-	return this->renderer;
-}
+Ref<IRenderer> RenderPipelineSandBox::getRenderer(void) { return this->renderer; }
 
 void RenderPipelineSandBox::setViewport(int width, int height, IRenderer *render) {
 	/*  Initialize synchronization object.*/
 	this->syncObject->fence();
 
 	/*  Update the viewport and set default scissor view.   */
-//	this->viewPort->setDimensions(x, y, width, height);
-//	this->viewPort->setscissorView(x, y, width, height);
+	//	this->viewPort->setDimensions(x, y, width, height);
+	//	this->viewPort->setscissorView(x, y, width, height);
 	this->viewPort->setDimensions(0, 0, width, height);
 	this->viewPort->setscissorView(0, 0, width, height);
-
 
 	/*  Resize framebuffers. */
 	this->createFrameTexture(*this->renderer, width, height);
 
 	// Wait in till all the resources are ready in 16 msecs.
-	while(this->syncObject->waitClient(16) != Sync::Complete);
+	while (this->syncObject->waitClient(16) != Sync::Complete)
+		;
 }
 
-void updateUniforms(Shader* shaderProgram, const UniformLocation* locations, const FragGraphicUniform *uniforms){
+void updateUniforms(Shader *shaderProgram, const UniformLocation *locations, const FragGraphicUniform *uniforms) {
 	/*  Update dynamic variables. shader uniforms. */
 	if (locations->time >= 0)
 		shaderProgram->setFloat(locations->time, uniforms->time.time);
@@ -366,12 +359,12 @@ void RenderPipelineSandBox::init(Ref<IRenderer> &renderer, const IConfig *config
 	geopldesc.vertexattribute[0].datatype = GeometryDesc::eFloat;
 	geopldesc.marker.markerName = "Display Quad.";
 
-	BufferDesc indirectDrawBufDesc= {};
+	BufferDesc indirectDrawBufDesc = {};
 	IndirectDrawArray indirectDrawArray = {
-			.count = 4,
-			.instanceCount = 1,
-			.first = 0,
-			.baseInstance = 0,
+		.count = 4,
+		.instanceCount = 1,
+		.first = 0,
+		.baseInstance = 0,
 	};
 	indirectDrawBufDesc.type = BufferDesc::eIndirectDraw;
 	indirectDrawBufDesc.data = &indirectDrawArray;
@@ -384,19 +377,19 @@ void RenderPipelineSandBox::init(Ref<IRenderer> &renderer, const IConfig *config
 	this->quadDisplay = Ref<GeometryObject>((*this->renderer)->createGeometry(&geopldesc));
 
 	/*  Create display shader.  */
-	ProgramPipeline* programPipeline;
+	ProgramPipeline *programPipeline;
 	ShaderLoader::loadDisplayShader(*this->renderer, &programPipeline);
 	this->displayShader = Ref<ProgramPipeline>(programPipeline);
 
 	int width, height;
-	this->viewPort->getViewPort(0,0, &width, &height);
+	this->viewPort->getViewPort(0, 0, &width, &height);
 
-	//TODO relocate to the sandbox scene object.
+	// TODO relocate to the sandbox scene object.
 	BufferDesc computeDesc = {};
 	IndirectDispatch dispatch = {
-			.num_groups_x = (width / 16),
-			.num_groups_y = (height / 16),
-			.num_groups_z = 1,
+		.num_groups_x = (width / 16),
+		.num_groups_y = (height / 16),
+		.num_groups_z = 1,
 	};
 	computeDesc.type = BufferDesc::eIndirectDispatch;
 	computeDesc.data = &dispatch;
@@ -407,11 +400,10 @@ void RenderPipelineSandBox::init(Ref<IRenderer> &renderer, const IConfig *config
 
 	createFrameTexture(*renderer, width, height);
 
-	//TODO relocate later!
-	//this->font = FontFactory::createFont("ipag.ttf", 10, *this->renderer);
+	// TODO relocate later!
+	// this->font = FontFactory::createFont("ipag.ttf", 10, *this->renderer);
 }
 
 // RenderQueue RenderPipelineSandBox::getSupportedQueue(void) const {
 // 	return (RenderQueue)(Geometry | Overlay);
 // }
-

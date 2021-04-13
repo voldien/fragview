@@ -1,33 +1,33 @@
-#include"FragView.h"
-#include <cstdlib>
-#include <iostream>
-#include <csignal>
-#include <execinfo.h>
-#include <dlfcn.h>
+#include "FragView.h"
 #include <Exception/IException.h>
+#include <csignal>
+#include <cstdlib>
+#include <dlfcn.h>
+#include <execinfo.h>
+#include <iostream>
 using namespace fragcore;
 using namespace fragview;
 
 void handler(int sig) {
 	switch (sig) {
-		case SIGABRT:
-		case SIGILL:
-		case SIGTERM:
-		case SIGSEGV: {
-			void *array[128];
-			const int nArrays = sizeof(array) / sizeof(array[0]);
-			size_t size;
+	case SIGABRT:
+	case SIGILL:
+	case SIGTERM:
+	case SIGSEGV: {
+		void *array[128];
+		const int nArrays = sizeof(array) / sizeof(array[0]);
+		size_t size;
 
-			// get void*'s for all entries on the stack
-			size = backtrace(array, nArrays);
+		// get void*'s for all entries on the stack
+		size = backtrace(array, nArrays);
 
-			// print out all the frames to stderr
-			fprintf(stderr, "Error: signal %d:\n", sig);
-			backtrace_symbols_fd(array, size, STDERR_FILENO);
-			exit(EXIT_FAILURE);
-		}
-		default:
-			break;
+		// print out all the frames to stderr
+		fprintf(stderr, "Error: signal %d:\n", sig);
+		backtrace_symbols_fd(array, size, STDERR_FILENO);
+		exit(EXIT_FAILURE);
+	}
+	default:
+		break;
 	}
 }
 
@@ -40,8 +40,8 @@ int main(int argc, const char **argv) {
 	signal(SIGSEGV, handler);
 
 	try {
-		//TODO add support for logging support.
-		//Log::addIOOutput(stdoutIO, Log::VERBOSITY);
+		// TODO add support for logging support.
+		// Log::addIOOutput(stdoutIO, Log::VERBOSITY);
 		FragView(argc, argv).run();
 	} catch (fragcore::IException &ex) {
 		std::cerr << "Internal exception - " << ex.getName() << std::endl;

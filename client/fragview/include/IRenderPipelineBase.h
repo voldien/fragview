@@ -1,15 +1,14 @@
 
 
-
 #ifndef _FRAG_ENGINE_IRENDER_PIPELINE_BASE_H_
 #define _FRAG_ENGINE_IRENDER_PIPELINE_BASE_H_ 1
-#include<Renderer/Prerequisites.h>
-#include<Renderer/Geometry.h>
-#include<Core/SmartReference.h>
-#include<Core/Ref.h>
-#include"Prerequisites.h"
-#include"Scene/Scene.h"
-#include"Node.h"
+#include "Node.h"
+#include "Prerequisites.h"
+#include "Scene/Scene.h"
+#include <Core/Ref.h>
+#include <Core/SmartReference.h>
+#include <Renderer/Geometry.h>
+#include <Renderer/Prerequisites.h>
 
 namespace fragview {
 	using namespace fragcore;
@@ -19,8 +18,8 @@ namespace fragview {
 	 */
 	class FVDECLSPEC IRenderPipelineBase : public SmartReference {
 		friend class RenderPipelineFactory;
-	public:
 
+	  public:
 		/**
 		 * Draw scene, iterate through each camera
 		 * and renderer the scene using the selected
@@ -29,8 +28,7 @@ namespace fragview {
 		 * @param scene
 		 * @param render
 		 */
-		virtual void draw(Node *node, FrameBuffer *frame,
-		                  IRenderer *render) = 0;
+		virtual void draw(Node *node, FrameBuffer *frame, IRenderer *render) = 0;
 
 		virtual void setRenderer(Ref<IRenderer> &renderer) = 0;
 
@@ -40,20 +38,16 @@ namespace fragview {
 
 		virtual void setViewport(int width, int height, IRenderer *render) = 0;
 
-
-	protected:
-
+	  protected:
 		/*  Basic internal components.  */
-		Ref<IRenderer> renderer;            /*  Main rendering API interface.  */
-		Ref<Sync> syncObject;               /*  Sync object.    */
-		ViewPort *viewPort;                 //TODO determine what to do
+		Ref<IRenderer> renderer; /*  Main rendering API interface.  */
+		Ref<Sync> syncObject;	 /*  Sync object.    */
+		ViewPort *viewPort;		 // TODO determine what to do
 
-
-		Ref<fragcore::Geometry> quadDisplay;    /*  Quad display.   */
-		Ref<Buffer> quadDisplayIndirect;    /*  Quad indirect buffer.    */
-		Ref<ProgramPipeline> displayShader; /*  Quad display shader.    */
+		Ref<fragcore::Geometry> quadDisplay; /*  Quad display.   */
+		Ref<Buffer> quadDisplayIndirect;	 /*  Quad indirect buffer.    */
+		Ref<ProgramPipeline> displayShader;	 /*  Quad display shader.    */
 	};
-}
-
+} // namespace fragview
 
 #endif

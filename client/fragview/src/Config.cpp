@@ -1,32 +1,33 @@
-#include"Config.h"
-#include"OptionDicSet.h"
-#include"Utils/StringUtil.h"
-#include<getopt.h>
-#include<stdexcept>
-#include<Renderer/RendererFactory.h>
-#include<FragCore.h>
+#include "Config.h"
+#include "OptionDicSet.h"
+#include "Utils/StringUtil.h"
+#include <FragCore.h>
+#include <Renderer/RendererFactory.h>
+#include <getopt.h>
+#include <stdexcept>
 //#include<Engine.h>
-#include"FragView.h"
-#include"Core/IO/FileSystem.h"
-#include"Core/Log.h"
+#include "Core/IO/FileSystem.h"
+#include "Core/Log.h"
+#include "FragView.h"
 //#include<hpmcpp/HpmCpp.h>
-#include<cstdlib>
-#include<csignal>
 #include <Exception/InvalidArgumentException.h>
+#include <csignal>
+#include <cstdlib>
 
 using namespace fragcore;
 using namespace fragview;
 
 /*	TODO reorder    */
-static const char *shortarg = "vVdqh" "wSp:r:P:dD:Isar:g:C:f:A:t:vF:cRH:E:nNC:G:p:UbP:~_";
+static const char *shortarg = "vVdqh"
+							  "wSp:r:P:dD:Isar:g:C:f:A:t:vF:cRH:E:nNC:G:p:UbP:~_";
 static struct option longoptions[] = {
 	/*  First pass arguments.   */
-	{"version", no_argument, NULL, 'v'},		/*	Print version of application.	*/
-	{"verbose", no_argument, NULL, 'V'},		/*	Print.	*/
-	{"debug", 	no_argument, NULL, 'd'},		/*	Debug.	*/
-	{"quite", 	no_argument, NULL, 'q'},		/*	Quite .	*/
-	{"help", 	no_argument, NULL, 'h'},		/*	Help.	*/
-	{"config", 	required_argument, NULL, 'D'},	/*	Override the configuration.	*/
+	{"version", no_argument, NULL, 'v'},	  /*	Print version of application.	*/
+	{"verbose", no_argument, NULL, 'V'},	  /*	Print.	*/
+	{"debug", no_argument, NULL, 'd'},		  /*	Debug.	*/
+	{"quite", no_argument, NULL, 'q'},		  /*	Quite .	*/
+	{"help", no_argument, NULL, 'h'},		  /*	Help.	*/
+	{"config", required_argument, NULL, 'D'}, /*	Override the configuration.	*/
 	{"supported-features", no_argument, NULL, ' '},
 
 	/*  Screen override options.    */
@@ -44,12 +45,13 @@ static struct option longoptions[] = {
 	{"renderer-directx", no_argument, NULL, '~'}, /*	Force rendering API DirectX. */
 
 	/*  Long options with arguments.    */
-	{"renderer", required_argument, NULL, 'r'},	/*	Set renderer by rendering path.   */
+	{"renderer", required_argument, NULL, 'r'}, /*	Set renderer by rendering path.   */
 	{"compute", required_argument, NULL, 'C'},	/*	Set standalone compute.	*/
 
 	/*	Rendering Quality.  */
-	{"quality", required_argument, NULL, '_'},			/*	*/
-	{"resolution-scale", required_argument, NULL, 'R'}, /*	Texture scale resolution (required gl_framebuffer_object for OpenGL).*/
+	{"quality", required_argument, NULL, '_'}, /*	*/
+	{"resolution-scale", required_argument, NULL,
+	 'R'}, /*	Texture scale resolution (required gl_framebuffer_object for OpenGL).*/
 
 	/*  Rendering Settings. */
 	{"anti-aliasing", required_argument, NULL, '_'}, /*	Set antialiasing.   */
@@ -78,15 +80,15 @@ static struct option longoptions[] = {
 
 	/*  Shader types.   */
 	{"file", required_argument, NULL, 'f'},
-	/*	Default shader file.	*/							  	
-	{"fragment", 				required_argument, NULL, 'F'},		/*	Fragment shader source.	*/
-	{"geometry", 				required_argument, NULL, 'G'},		/*	Geometry shader source.	*/
-	{"compute", 				required_argument, NULL, 'H'},		/*	Compute shader source.	*/
-	{"tessellation-control", 	required_argument, NULL, 'C'},	  	/*	Tessellation C shader source.	*/
-	{"tessellation-evolution", 	required_argument, NULL, 'E'}, 		/*	Tessellation E shader source.	*/
-	{"mesh-shader", 			required_argument, NULL, 'E'}, 		/*	Mesh shader	source.	*/
-	{"binary-program", 			required_argument, NULL, 'B'},		/*		*/
-	{"material-program", 		required_argument, NULL, 'M'},		/*	TODO add support for complex materials combinations.	*/
+	/*	Default shader file.	*/
+	{"fragment", required_argument, NULL, 'F'},				  /*	Fragment shader source.	*/
+	{"geometry", required_argument, NULL, 'G'},				  /*	Geometry shader source.	*/
+	{"compute", required_argument, NULL, 'H'},				  /*	Compute shader source.	*/
+	{"tessellation-control", required_argument, NULL, 'C'},	  /*	Tessellation C shader source.	*/
+	{"tessellation-evolution", required_argument, NULL, 'E'}, /*	Tessellation E shader source.	*/
+	{"mesh-shader", required_argument, NULL, 'E'},			  /*	Mesh shader	source.	*/
+	{"binary-program", required_argument, NULL, 'B'},		  /*		*/
+	{"material-program", required_argument, NULL, 'M'},		  /*	TODO add support for complex materials combinations.	*/
 
 	/*  Texture arguments.  16 texture unit support by default. */
 	{"texture0", required_argument, NULL, ' '},	   /*	Texture on index 0. */
@@ -114,7 +116,8 @@ static struct option longoptions[] = {
 	{"script", required_argument, NULL, 'O'},		 /*  Script file. */
 
 	/*  */
-	{"save-config", optional_argument, NULL, 'U'}, /*  Enable saving of configuration file to either default or specific filepath. */
+	{"save-config", optional_argument, NULL,
+	 'U'}, /*  Enable saving of configuration file to either default or specific filepath. */
 	{NULL, 0, NULL, 0},
 };
 
@@ -125,30 +128,27 @@ Config::Config(const Config &other) {
 }
 
 Config::~Config(void) {
-	//TODO determine what needs to be done here.
+	// TODO determine what needs to be done here.
 }
 
-fragcore::IConfig *Config::getSuperInstance(void) {
-	return new Config();
-}
+fragcore::IConfig *Config::getSuperInstance(void) { return new Config(); }
 
 void Config::setDefaultOption(void) {
 
 	IConfig &global = *this;
 #if defined(_DEBUG)
-	global.set("debug", true);  // Enable global debug for the application.
+	global.set("debug", true); // Enable global debug for the application.
 #else
 	global.set("debug", false);
 #endif
 
-
 	/*  Behavior functions.   */
 	global.set("notify-file", true);
-	global.set("drag-and-drop", true);	/*	Only for 3D scenes.	*/
+	global.set("drag-and-drop", true); /*	Only for 3D scenes.	*/
 
 	/*	Default interfaces configuration.	*/
 	global.set("renderer-dynamicInterface",
-	           fragcore::RenderingFactory::getInterfaceLibraryPath(fragcore::RenderingFactory::OpenGL));
+			   fragcore::RenderingFactory::getInterfaceLibraryPath(fragcore::RenderingFactory::OpenGL));
 	global.set<int>("SIMD", Hpm::eHPM_DEFAULT);
 
 	/*TODO determine if to relocate.    */
@@ -171,12 +171,12 @@ void Config::setDefaultOption(void) {
 	rendererAPIConfig.set("debug-tracer", true);
 	rendererAPIConfig.set("anti-aliasing-samples", 0);
 	rendererAPIConfig.set("anti-aliasing", false);
-	rendererAPIConfig.set("version", "auto"); //TODO check if a better name is better.
+	rendererAPIConfig.set("version", "auto"); // TODO check if a better name is better.
 
 	/*  Global main window settings.    */
 	IConfig &renderWindowSetting = this->getSubConfig("render-window-settings");
 	renderWindowSetting.set("fullscreen", false);
-	renderWindowSetting.set("isFullscreen", 0);	//TODO determine if to remove or not.
+	renderWindowSetting.set("isFullscreen", 0); // TODO determine if to remove or not.
 	renderWindowSetting.set("screen-width", -1);
 	renderWindowSetting.set("screen-height", -1);
 	renderWindowSetting.set("screen-max-width", -1);
@@ -188,9 +188,6 @@ void Config::setDefaultOption(void) {
 	renderWindowSetting.set("background-rendering", false);
 	renderWindowSetting.set("window-resizable", true);
 	renderWindowSetting.set("window-bordered", true);
-
-
-
 
 	IConfig &resourceConfig = this->getSubConfig("resource-settings");
 	/*	Resources default configuration.	*/
@@ -206,9 +203,9 @@ void Config::setDefaultOption(void) {
 
 	IConfig &sandboxConfig = this->getSubConfig("sandbox");
 	/*  Assets import.  */
-	//sandboxConfig.set("texture0", 0);
-	//sandboxConfig.set("shader0", 0);
-	//sandboxConfig.set("compression", false);
+	// sandboxConfig.set("texture0", 0);
+	// sandboxConfig.set("shader0", 0);
+	// sandboxConfig.set("compression", false);
 	/*  Variables.  */
 	sandboxConfig.set("num_textures", 0);
 	sandboxConfig.set("num_shaders", 0);
@@ -243,13 +240,13 @@ void Config::setDefaultOption(void) {
 	render3DSettingConfig.set("shadow-distance", 100.0f);
 	render3DSettingConfig.set("shadow-resolution", 2048);
 	render3DSettingConfig.set("shadow-cascaded", 4);
-	//TODO change to percentage.
+	// TODO change to percentage.
 	render3DSettingConfig.set("shadow-cascaded-0", 20.0f);
 	render3DSettingConfig.set("shadow-cascaded-1", 100.0f);
 	render3DSettingConfig.set("shadow-cascaded-2", 250.0f);
 	render3DSettingConfig.set("shadow-cascaded-3", 800.0f);
 	/*  Light.  */
-	IConfig& light0 = render3DSettingConfig.getSubConfig("light0");
+	IConfig &light0 = render3DSettingConfig.getSubConfig("light0");
 	light0.set("intensity", 1);
 
 	/*  */
@@ -258,7 +255,7 @@ void Config::setDefaultOption(void) {
 	sceneConfig.set("free-rotation", true);
 	sceneConfig.set("free-rotation-speed", 3.14f / 10.0f);
 	sceneConfig.set("default-focus", true);
-	
+
 	/*  Camera default. */
 	IConfig &cameraConfig = sceneConfig.getSubConfig("main-camera");
 	cameraConfig.set("camera-fov", 70.0f);
@@ -277,35 +274,35 @@ void Config::parseGetOpt(int argc, const char **argv) {
 	IConfig &sandboxConfig = this->getSubConfig("sandbox");
 
 	/*  First pass options. */
-	while ((c = getopt_long(argc, (char *const *) argv, shortarg, longoptions, &index)) != EOF) {
+	while ((c = getopt_long(argc, (char *const *)argv, shortarg, longoptions, &index)) != EOF) {
 		const char *option = NULL;
 		if (index >= 0 && index < sizeof(longoptions) / sizeof(longoptions[0]))
 			option = longoptions[index].name;
 		switch (c) {
-			case 'v':   /*  Display version only of the program.    */
-				Log::log(Log::Quite, "version %s.\n", FragView::getVersion());
-				exit(EXIT_SUCCESS);
-			case 'h':
-				/*  Print help. */
-				Log::log(Log::Quite, "Help\n");
-				exit(EXIT_SUCCESS);
-			case 'd':   /*  Enable debug mode.  */
-				this->set<int>("debug", 1);
-				Log::setVerbosity(Log::Debug);
-				break;
-			case 'V':   /*  Enable verbosity logging.   */
-				Log::setVerbosity(Log::Verbose);
-				break;
-			case 'q':   /*  Set logging to quite.   */
-				Log::setVerbosity(Log::Quite);
-				break;
-				if (option) {
-					if (strcmp(option, "supported_features") == 0){
-						/*	*/
-					}
+		case 'v': /*  Display version only of the program.    */
+			Log::log(Log::Quite, "version %s.\n", FragView::getVersion());
+			exit(EXIT_SUCCESS);
+		case 'h':
+			/*  Print help. */
+			Log::log(Log::Quite, "Help\n");
+			exit(EXIT_SUCCESS);
+		case 'd': /*  Enable debug mode.  */
+			this->set<int>("debug", 1);
+			Log::setVerbosity(Log::Debug);
+			break;
+		case 'V': /*  Enable verbosity logging.   */
+			Log::setVerbosity(Log::Verbose);
+			break;
+		case 'q': /*  Set logging to quite.   */
+			Log::setVerbosity(Log::Quite);
+			break;
+			if (option) {
+				if (strcmp(option, "supported_features") == 0) {
+					/*	*/
 				}
-			default:
-				break;
+			}
+		default:
+			break;
 		}
 	}
 
@@ -314,127 +311,119 @@ void Config::parseGetOpt(int argc, const char **argv) {
 	optopt = 0;
 	opterr = 0;
 
-	while ((c = getopt_long(argc, (char *const *) argv, shortarg, longoptions, &index)) != EOF) {
+	while ((c = getopt_long(argc, (char *const *)argv, shortarg, longoptions, &index)) != EOF) {
 		const char *option = NULL;
 		if (index >= 0 && index < sizeof(longoptions) / sizeof(longoptions[0]))
 			option = longoptions[index].name;
 
 		switch (c) {
-			case 'w':   /*  */
-				this->set<bool>("wallpaper", true);
-				break;
-			case 'a':   /*  */
-				this->getSubConfig("render-driver").set<bool>("alpha", true);
-				break;
-			case 'S':   /*  */
-				this->set<bool>("gamma-correction", true);
-				break;
-			case 'N':   /*  */
-				this->set<bool>("notify-file", false);
-				break;
-			case 'I':   /*  */
-				break;
-			case 'c':   /*  */
-				break;
-			case 'f': {   /*  */
+		case 'w': /*  */
+			this->set<bool>("wallpaper", true);
+			break;
+		case 'a': /*  */
+			this->getSubConfig("render-driver").set<bool>("alpha", true);
+			break;
+		case 'S': /*  */
+			this->set<bool>("gamma-correction", true);
+			break;
+		case 'N': /*  */
+			this->set<bool>("notify-file", false);
+			break;
+		case 'I': /*  */
+			break;
+		case 'c': /*  */
+			break;
+		case 'f': { /*  */
+			/*  */
+			int num = sandboxConfig.get<int>("num_shaders");
+			sandboxConfig.set<const char *>(fvformatf("shader%d", num).c_str(), optarg);
+
+			/*  Update number of textures.  */
+			num++;
+			sandboxConfig.set("num_shaders", num);
+		} break;
+		case 't': /*  */
+			if (optarg) {
 				/*  */
-				int num = sandboxConfig.get<int>("num_shaders");
-				sandboxConfig.set<const char *>(fvformatf("shader%d", num).c_str(), optarg);
+				int num = sandboxConfig.get<int>("num_textures");
+				sandboxConfig.set<const char *>(fvformatf("texture%d", num).c_str(), optarg);
 
 				/*  Update number of textures.  */
 				num++;
-				sandboxConfig.set("num_shaders", num);
+				sandboxConfig.set("num_textures", num);
 			}
-				break;
-			case 't':   /*  */
-				if (optarg) {
-					/*  */
-					int num = sandboxConfig.get<int>("num_textures");
-					sandboxConfig.set<const char *>(fvformatf("texture%d", num).c_str(), optarg);
+			break;
+		case 'F': /*  */
+			break;
+		case 'C': { /*  */
+			/*  */
+			int num = sandboxConfig.get<int>("num_compute");
+			sandboxConfig.set<const char *>(fvformatf("compute%d", num).c_str(), optarg);
 
-					/*  Update number of textures.  */
-					num++;
-					sandboxConfig.set("num_textures", num);
-
-				}
-				break;
-			case 'F':   /*  */
-				break;
-			case 'C': {   /*  */
-				/*  */
-				int num = sandboxConfig.get<int>("num_compute");
-				sandboxConfig.set<const char *>(fvformatf("compute%d", num).c_str(), optarg);
-
-				/*  Update number of textures.  */
-				num++;
-				sandboxConfig.set("num_compute", num);
+			/*  Update number of textures.  */
+			num++;
+			sandboxConfig.set("num_compute", num);
+		} break;
+		case 'G': /*  */
+			break;
+		case 'T': /*  */
+			break;
+		case 'E': /*  */
+			break;
+		case 'B': /*  */
+			break;
+		case 'p': /*  */
+			break;
+		case 'P': /*  */
+			break;
+		case 's': /*  */
+			break;
+		case 'b': /*  Sandbox.    */
+			this->set<bool>("sandbox", true);
+			if (optarg) {
 			}
-				break;
-			case 'G':   /*  */
-				break;
-			case 'T':   /*  */
-				break;
-			case 'E':   /*  */
-				break;
-			case 'B':   /*  */
-				break;
-			case 'p':   /*  */
-				break;
-			case 'P':   /*  */
-				break;
-			case 's':   /*  */
-				break;
-			case 'b':   /*  Sandbox.    */
-				this->set<bool>("sandbox", true);
-				if (optarg) {
-
-				}
-				break;
-			case 'O':   /*  */
-				break;
-			case 'U':   /*  */
-				this->set<bool>("save-configuration", true);
-				if (optarg)
-				{
-					this->set<const char *>("dump-configuration", optarg);
-				}
-				break;
-			case ' ':    /*	Parse long option with string argument.	*/
-				/*  renderer-dynamicInterface   */
-				if (optarg && option)
-				{
-					this->set<const char *>(option, (const char *)optarg);
-				}
-				break;
-			case '_': {    /*	Parse long option with no argument.	*/
-				if (optarg && option)
-				{
-					this->set(option, (int)strtol(optarg, NULL, 10));
-				}
+			break;
+		case 'O': /*  */
+			break;
+		case 'U': /*  */
+			this->set<bool>("save-configuration", true);
+			if (optarg) {
+				this->set<const char *>("dump-configuration", optarg);
 			}
-				break;
-			case '~':   /*  Special type of options.    */
-				if (option){
-					if (strcmp(option, "renderer-opengl") == 0)
-						this->set<const char *>("renderer-dynamicInterface",
-												RenderingFactory::getInterfaceLibraryPath(RenderingFactory::OpenGL));
-					if (strcmp(option, "renderer-vulkan") == 0)
-						this->set<const char *>("renderer-dynamicInterface",
-												RenderingFactory::getInterfaceLibraryPath(RenderingFactory::Vulkan));
-					if (strcmp(option, "renderer-opencl") == 0)
-						this->set<const char *>("renderer-dynamicInterface",
-												RenderingFactory::getInterfaceLibraryPath(RenderingFactory::eOpenCL));
-					if (strcmp(option, "renderer-directx") == 0 )
-						this->set<const char *>("renderer-dynamicInterface",
-												RenderingFactory::getInterfaceLibraryPath(RenderingFactory::DirectX));
-					if (strcmp(option, "no-decoration") == 0)
-						this->set("window-bordered", false);
-					if (strcmp(option, "v-sync") == 0)
-						this->set("v-sync", true);
-				}
-				break;
-			default:    /*  */
-				break;
+			break;
+		case ' ': /*	Parse long option with string argument.	*/
+			/*  renderer-dynamicInterface   */
+			if (optarg && option) {
+				this->set<const char *>(option, (const char *)optarg);
+			}
+			break;
+		case '_': { /*	Parse long option with no argument.	*/
+			if (optarg && option) {
+				this->set(option, (int)strtol(optarg, NULL, 10));
+			}
+		} break;
+		case '~': /*  Special type of options.    */
+			if (option) {
+				if (strcmp(option, "renderer-opengl") == 0)
+					this->set<const char *>("renderer-dynamicInterface",
+											RenderingFactory::getInterfaceLibraryPath(RenderingFactory::OpenGL));
+				if (strcmp(option, "renderer-vulkan") == 0)
+					this->set<const char *>("renderer-dynamicInterface",
+											RenderingFactory::getInterfaceLibraryPath(RenderingFactory::Vulkan));
+				if (strcmp(option, "renderer-opencl") == 0)
+					this->set<const char *>("renderer-dynamicInterface",
+											RenderingFactory::getInterfaceLibraryPath(RenderingFactory::eOpenCL));
+				if (strcmp(option, "renderer-directx") == 0)
+					this->set<const char *>("renderer-dynamicInterface",
+											RenderingFactory::getInterfaceLibraryPath(RenderingFactory::DirectX));
+				if (strcmp(option, "no-decoration") == 0)
+					this->set("window-bordered", false);
+				if (strcmp(option, "v-sync") == 0)
+					this->set("v-sync", true);
+			}
+			break;
+		default: /*  */
+			break;
 		}
 	}
 
@@ -443,7 +432,6 @@ void Config::parseGetOpt(int argc, const char **argv) {
 	optopt = 0;
 	opterr = 0;
 }
-
 
 Config *Config::createConfig(int argc, const char **argv, const char *configpath) {
 
@@ -485,7 +473,7 @@ const char *Config::getConfigFilePath(int argc, const char **argv) {
 	const char *path = NULL;
 
 	/*	Iterate through each option - find the override config option.	*/
-	while ((c = getopt_long(argc, (char *const *) argv, shortarg, longoptions, &index)) != EOF) {
+	while ((c = getopt_long(argc, (char *const *)argv, shortarg, longoptions, &index)) != EOF) {
 		if (c == 'D') {
 			path = optarg;
 			break;
@@ -499,4 +487,3 @@ const char *Config::getConfigFilePath(int argc, const char **argv) {
 
 	return path;
 }
-

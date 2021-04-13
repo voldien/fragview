@@ -18,11 +18,11 @@
 */
 #ifndef _FRAG_VIEW_H_
 #define _FRAG_VIEW_H_ 1
-#include <Renderer/IRenderer.h>
-#include <FileNotify.h>
-#include "IRenderPipelineBase.h"
 #include "Config.h"
+#include "IRenderPipelineBase.h"
 #include <Core/RefPtr.h>
+#include <FileNotify.h>
+#include <Renderer/IRenderer.h>
 #include <Renderer/RendererWindow.h>
 
 namespace fragview {
@@ -32,8 +32,8 @@ namespace fragview {
 	 * executable program.
 	 */
 	class FVDECLSPEC FragView {
-	public:
-		FragView(int argc, const char** argv);
+	  public:
+		FragView(int argc, const char **argv);
 		~FragView(void);
 
 		/**
@@ -45,11 +45,10 @@ namespace fragview {
 		 * Get version of fragview program.
 		 * @return non-null terminated string.
 		 */
-		static const char* getVersion(void);
+		static const char *getVersion(void);
 
-	protected:
-
-		void init(int argc, const char** argv);
+	  protected:
+		void init(int argc, const char **argv);
 		void loadDefaultSceneAsset(void);
 		void cacheShaders(void);
 		void loadCachedShaders(void);
@@ -60,19 +59,18 @@ namespace fragview {
 		 */
 		void createWindow(int x, int y, int width, int height);
 
-	private:    /*  */
-
-		fragcore::Ref<fragcore::IRenderer> renderer;            /*  Low level rendering API interface.  */
+	  private:										 /*  */
+		fragcore::Ref<fragcore::IRenderer> renderer; /*  Low level rendering API interface.  */
 		fragcore::Ref<IRenderPipelineBase> renderpipeline;
-	//    EventController* controller;
-		fragcore::Ref<fragcore::IScheduler> sch;            /*  */
-		fragcore::Ref<fragcore::IScheduler> logicSch;       /*  */
-		Config* config;                                     /*  Current config.    */   //TODO add suport for reference.
-		fragcore::FileNotify* notify;                       /*  Notify Asset changes.  */
-		//fragengine::Scene *scene;                             /*  Current scene.  */
-		fragcore::RendererWindow *rendererWindow;           /*  */
-		fragcore::Ref<fragcore::IFileSystem> fileSystem;    /*  */
+		//    EventController* controller;
+		fragcore::Ref<fragcore::IScheduler> sch;	  /*  */
+		fragcore::Ref<fragcore::IScheduler> logicSch; /*  */
+		Config *config; /*  Current config.    */	  // TODO add suport for reference.
+		fragcore::FileNotify *notify;				  /*  Notify Asset changes.  */
+		// fragengine::Scene *scene;                             /*  Current scene.  */
+		fragcore::RendererWindow *rendererWindow;		 /*  */
+		fragcore::Ref<fragcore::IFileSystem> fileSystem; /*  */
 	};
-}
+} // namespace fragview
 
 #endif
