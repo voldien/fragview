@@ -1,13 +1,11 @@
 #include "SandBoxSubScene.h"
-#include <Exception/InvalidArgumentException.h>
 #include <Scene/Scene.h>
 
-#include <Renderer/Buffer.h>
-#include <Renderer/FrameBuffer.h>
-#include <Renderer/ProgramPipeline.h>
-#include <Renderer/Query.h>
-#include <Renderer/Sync.h>
-#include <Renderer/ViewPort.h>
+#include <Buffer.h>
+#include <FrameBuffer.h>
+#include <Query.h>
+#include <Sync.h>
+#include <ViewPort.h>
 
 using namespace fragcore;
 using namespace fragengine;

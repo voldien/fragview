@@ -19,13 +19,14 @@
 #ifndef _FRAGVIEW_RENDERPIPELINE_SANDBOX_H_
 #define _FRAGVIEW_RENDERPIPELINE_SANDBOX_H_ 1
 #include <FragCore.h>
+#include<Node.h>
 #include <RenderPipeline/IRenderPipelineBase.h>
 
 namespace fragview {
 	using namespace fragcore;
 
 	/**
-	 * @brief 
+	 * @brief
 	 *
 	 */
 	class FVDECLSPEC RenderPipelineSandBox : public IRenderPipelineBase {

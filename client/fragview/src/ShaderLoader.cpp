@@ -1,6 +1,5 @@
 #include "ShaderLoader.h"
-#include <Renderer/ProgramPipeline.h>
-#include <Utils/ShaderUtil.h>
+#include <ShaderUtil.h>
 using namespace fragview;
 using namespace fragcore;
 

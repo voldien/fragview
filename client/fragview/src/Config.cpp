@@ -1,16 +1,13 @@
 #include "Config.h"
 #include "OptionDicSet.h"
-#include "Utils/StringUtil.h"
 #include <FragCore.h>
-#include <Renderer/RendererFactory.h>
+#include <RendererFactory.h>
 #include <getopt.h>
 #include <stdexcept>
 //#include<Engine.h>
 #include "Core/IO/FileSystem.h"
 #include "Core/Log.h"
 #include "FragView.h"
-//#include<hpmcpp/HpmCpp.h>
-#include <Exception/InvalidArgumentException.h>
 #include <csignal>
 #include <cstdlib>
 

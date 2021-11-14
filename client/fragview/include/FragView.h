@@ -18,12 +18,12 @@
 */
 #ifndef _FRAG_VIEW_H_
 #define _FRAG_VIEW_H_ 1
-#include "Config.h"
-#include "IRenderPipelineBase.h"
+#include <IRenderPipelineBase.h>
+#include <Core/Config.h>
 #include <Core/RefPtr.h>
 #include <FileNotify.h>
-#include <Renderer/IRenderer.h>
-#include <Renderer/RendererWindow.h>
+#include <IRenderer.h>
+#include <RendererWindow.h>
 
 namespace fragview {
 

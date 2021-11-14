@@ -7,8 +7,8 @@
 #include "Scene/Scene.h"
 #include <Core/Ref.h>
 #include <Core/SmartReference.h>
-#include <Renderer/Geometry.h>
-#include <Renderer/Prerequisites.h>
+#include <Geometry.h>
+#include <RenderPrerequisites.h>
 
 namespace fragview {
 	using namespace fragcore;

@@ -19,8 +19,7 @@
 #ifndef _FRAGVIEW_GLSLSANDBOXSUBSCENE_H_
 #define _FRAGVIEW_GLSLSANDBOXSUBSCENE_H_ 1
 #include <FragCore.h>
-#include <Renderer/Prerequisites.h>
-#include <Renderer/ProgramPipeline.h>
+#include <RenderPrerequisites.h>
 #include <Scene/Scene.h>
 #include <map>
 #include <vector>
