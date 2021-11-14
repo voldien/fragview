@@ -23,28 +23,65 @@ FIND_PACKAGE(Git QUIET)
 SET(FRAGENGINE_SUBMODULE_PATH ${PROJECT_SOURCE_DIR}/extern/repo/fragengine)
 IF(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
 	# Update submodules as needed
-	OPTION(GIT_SUBMODULE "Check submodules during build" ON)
+	OPTION(GIT_SUBMODULE "Check submodules during build" OFF)
 	IF(GIT_SUBMODULE)
 		FILE(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/extern/repo/fragengine)
 		MESSAGE(STATUS "Submodule update  --recursive")
-		EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
-						WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-						RESULT_VARIABLE GIT_SUBMOD_RESULT)
+		# EXECUTE_PROCESS(COMMAND ${GIT_EXECUTABLE} submodule update --init --recursive
+		# 				WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+		# 				RESULT_VARIABLE GIT_SUBMOD_RESULT)
 		IF(NOT GIT_SUBMOD_RESULT EQUAL "0")
-			MESSAGE(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
+#			MESSAGE(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
 		ENDIF()
 	ENDIF()
 	
 	#TODO determine if can be done auto.
 	#SET(FRAG_CORE_INCLUDE "${PROJECT_SOURCE_DIR}/extern/repo/fragengine/frag-core/include")
 	#SET(FRAG_ENGINE_INCLUDE "${PROJECT_SOURCE_DIR}/extern/repo/fragengine/frag-engine/include")
-	ADD_SUBDIRECTORY(${PROJECT_SOURCE_DIR}/extern/repo/fragengine EXCLUDE_FROM_ALL)
+#	ADD_SUBDIRECTORY(${PROJECT_SOURCE_DIR}/extern/repo/fragengine EXCLUDE_FROM_ALL)
 ELSE()
 
 ENDIF()
 
+IF(BUILD_WITH_EXTERNAL_PROJECT)
+
+	# Git must be avaiable on the system for using the external projects.
+	IF(GIT_FOUND)
+		INCLUDE(ExternalProject)
+		SET_PROPERTY(DIRECTORY PROPERTY EP_STEP_TARGETS build)
+
+		SET(FRAGENGINE_ROOT ${CMAKE_CURRENT_BINARY_DIR}/deps/fragengine)
+		SET(FRAGENGINE_LIB_DIR ${FRAGENGINE_ROOT}/lib)
+		SET(FRAGENGINE_INCLUDE_DIR ${FRAGENGINE_ROOT}/include)
+
+		ExternalProject_Add(fragengine-external
+				URL ${CMAKE_CURRENT_SOURCE_DIR}/extern/repo/fragengine
+				SOURCE_DIR ${FRAGENGINE_ROOT}/src/fragengine
+				BINARY_DIR ${FRAGENGINE_ROOT}/src/fragengine-build
+				INSTALL_DIR ${FRAGENGINE_ROOT}
+				CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=<INSTALL_DIR>  -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} -DBUILD_WITH_TEST=OFF -DBUILD_WITH_SAMPLES=OFF -DGIT_SUBMODULE=OFF -DBUILD_WITH_EXTERNAL_PROJECT=ON
+				STEP_TARGETS build
+				COMMENT "Building fragengine."
+				LOG_DOWNLOAD ON)
+		# Include fragengine headers.
+		ADD_LIBRARY(fragengine SHARED IMPORTED)
+		ADD_DEPENDENCIES(fragengine fragengine-external)
+		SET_TARGET_PROPERTIES(fragengine PROPERTIES
+				IMPORTED_LOCATION ${FRAGENGINE_LIB_DIR}/libfragengine.so
+				INTERFACE_LINK_LIBRARIES ${FRAGENGINE_LIB_DIR}/libfragengine.so
+				INCLUDE_DIRECTORIES ${CMAKE_SOURCE_DIR}/extern/repo/fragengine/frag-engine/include
+				INTERFACE_INCLUDE_DIRECTORIES ${CMAKE_SOURCE_DIR}/extern/repo/fragengine/frag-engine/include)
+
+	ELSE()
+		MESSAGE(FATAL_ERROR "Require Git for loading external projects.")
+	ENDIF()
+ENDIF()
+
+
+
+
 IF(NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/repo/fragengine")
-	MESSAGE(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
+#	MESSAGE(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
 ENDIF()
 
 ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/client)

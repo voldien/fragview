@@ -23,7 +23,9 @@
 
 namespace fragview {
 	using namespace fragcore;
+
 	/**
+	 * @brief 
 	 *
 	 */
 	class FVDECLSPEC RenderPipelineSandBox : public IRenderPipelineBase {
@@ -49,7 +51,7 @@ namespace fragview {
 		// virtual void updateUniform(void);
 
 	  private:
-		Ref<Geometry> quadDisplay;
+		//Ref<Geometry> quadDisplay;
 		Ref<Buffer> quadDisplayIndirect;
 		Ref<ProgramPipeline> displayShader;
 
