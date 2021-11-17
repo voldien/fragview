@@ -99,7 +99,7 @@ namespace fragview {
 		std::vector<Texture *> textures;
 		std::map<unsigned int, UniformLocation> cachedUniforms;
 
-		std::map<ProgramPipeline::ShaderType, std::vector<ProgramPipeline *>> sequences;
+		std::map<Shader::ShaderType, std::vector<Shader *>> sequences;
 
 		/*  Compute shader attributes.  */
 		std::vector<Texture::MapTarget> computeMapTargets;
@@ -113,41 +113,41 @@ namespace fragview {
 		// Queue<Composition> compositions;
 
 	  protected: /*  */
-		void updateUniformLocations(ProgramPipeline *programPipeline, UniformLocation *location,
-									ProgramPipeline::ShaderType shaderStage);
+		void updateUniformLocations(Shader *Shader, UniformLocation *location,
+									Shader::ShaderType shaderStage);
 
 	  public:
 		/*  Add elements.   */
 		void addTexture(Texture *texture);
 
-		void addShader(ProgramPipeline *shader);
+		void addShader(Shader *shader);
 
-		void addCompute(ProgramPipeline *compute);
+		void addCompute(Shader *compute);
 
 		void setDisptchBuffer(Ref<Buffer> dispatchBuffer);
 
-		const Ref<Buffer> &getDispatchBuffer(void) const;
+		const Ref<Buffer> &getDispatchBuffer() const;
 
 		/*  Get elements.   */
 		Texture *getTexture(int index);
 
-		ProgramPipeline *getShader(int index);
+		Shader *getShader(int index);
 
-		ProgramPipeline *getCompute(int index);
+		Shader *getCompute(int index);
 
-		const std::vector<Texture *> &getTextures(void) const;
+		const std::vector<Texture *> &getTextures() const;
 
 		/*  Get element count. */
-		int getNumTextures(void) const;
+		int getNumTextures() const;
 
-		int getNumShaders(void) const;
+		int getNumShaders() const;
 
-		int getNumCompute(void) const;
+		int getNumCompute() const;
 
 		/*  Get compute bind attributes.    */
-		const std::vector<Texture::MapTarget> &getComputeMapTargets(void) const;
+		const std::vector<Texture::MapTarget> &getComputeMapTargets() const;
 
-		const std::vector<Texture::Format> &getComputeFormats(void) const;
+		const std::vector<Texture::Format> &getComputeFormats() const;
 
 		const int *getComputeLocalWorkGroup(int index);
 
@@ -156,15 +156,15 @@ namespace fragview {
 
 		UniformLocation *getUniformLocation(int uid);
 
-		FragGraphicUniform *getFragUniform(void);
+		FragGraphicUniform *getFragUniform();
 
 		/**
 		 * Update all shader cached uniforms.
 		 */
-		void updateAllUniformLocations(void);
+		void updateAllUniformLocations();
 
 	  public:
-		~SandBoxSubScene(void);
+		~SandBoxSubScene();
 	};
 } // namespace fragview
 

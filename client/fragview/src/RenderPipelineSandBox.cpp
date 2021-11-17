@@ -56,7 +56,7 @@ void RenderPipelineSandBox::draw(Scene *scene, FrameBuffer *frame, IRenderer *re
 		unsigned int nrBoundAttachment = 2;
 		for (int i = 0; i < sandbox->getNumShaders(); i++) {
 			/*  */
-			ProgramPipeline *shader = sandbox->getShader(i);
+			Shader *shader = sandbox->getShader(i);
 			if (i == 0) {
 				// this->frameBuffer->write();
 				// this->frameBuffer->clear(CLEARBITMASK::eColor);
@@ -83,7 +83,7 @@ void RenderPipelineSandBox::draw(Scene *scene, FrameBuffer *frame, IRenderer *re
 			}
 
 			/*  */
-			Shader *frag = shader->getShader(ProgramPipeline::FRAGMENT_SHADER);
+			Shader *frag = shader->getShader(Shader::FRAGMENT_SHADER);
 			const UniformLocation *locations = sandbox->getUniformLocation(shader->getUID());
 			shader->bind();
 
@@ -121,7 +121,7 @@ void RenderPipelineSandBox::draw(Scene *scene, FrameBuffer *frame, IRenderer *re
 
 		/*  */
 		for (int i = 0; i < sandbox->getNumCompute(); i++ && this->supportComputeShader) {
-			ProgramPipeline *compute = sandbox->getCompute(i);
+			Shader *compute = sandbox->getCompute(i);
 
 			/*  Bind indirect.  */
 			compute->bind();
@@ -129,7 +129,7 @@ void RenderPipelineSandBox::draw(Scene *scene, FrameBuffer *frame, IRenderer *re
 
 			/*  Update the uniforms.    */
 			const UniformLocation *locations = sandbox->getUniformLocation(compute->getUID());
-			updateUniforms(compute->getShader(ProgramPipeline::COMPUTE_SHADER), locations, uniforms);
+			updateUniforms(compute->getShader(Shader::COMPUTE_SHADER), locations, uniforms);
 			if (locations->backbuffer >= 0)
 				backTexture->bind(locations->backbuffer);
 
@@ -193,7 +193,7 @@ RenderPipelineSandBox::RenderPipelineSandBox(Ref<IRenderer> &renderer) {
 	this->init(renderer, NULL);
 }
 
-RenderPipelineSandBox::~RenderPipelineSandBox(void) {
+RenderPipelineSandBox::~RenderPipelineSandBox() {
 	/*  Display objects.    */
 	if (this->quadDisplay->deincreemnt())
 		this->renderer->deleteGeometry(*this->quadDisplay);
@@ -287,9 +287,9 @@ void RenderPipelineSandBox::setRenderer(Ref<IRenderer> &renderer) {
 	this->supportComputeShader = false;
 }
 
-const Ref<IRenderer> &RenderPipelineSandBox::getRenderer(void) const { return this->renderer; }
+const Ref<IRenderer> &RenderPipelineSandBox::getRenderer() const { return this->renderer; }
 
-Ref<IRenderer> RenderPipelineSandBox::getRenderer(void) { return this->renderer; }
+Ref<IRenderer> RenderPipelineSandBox::getRenderer() { return this->renderer; }
 
 void RenderPipelineSandBox::setViewport(int width, int height, IRenderer *render) {
 	/*  Initialize synchronization object.*/
@@ -376,9 +376,9 @@ void RenderPipelineSandBox::init(Ref<IRenderer> &renderer, const IConfig *config
 	this->quadDisplay = Ref<GeometryObject>((*this->renderer)->createGeometry(&geopldesc));
 
 	/*  Create display shader.  */
-	ProgramPipeline *programPipeline;
-	ShaderLoader::loadDisplayShader(*this->renderer, &programPipeline);
-	this->displayShader = Ref<ProgramPipeline>(programPipeline);
+	Shader *Shader;
+	ShaderLoader::loadDisplayShader(*this->renderer, &Shader);
+	this->displayShader = Ref<Shader>(Shader);
 
 	int width, height;
 	this->viewPort->getViewPort(0, 0, &width, &height);
@@ -403,6 +403,6 @@ void RenderPipelineSandBox::init(Ref<IRenderer> &renderer, const IConfig *config
 	// this->font = FontFactory::createFont("ipag.ttf", 10, *this->renderer);
 }
 
-// RenderQueue RenderPipelineSandBox::getSupportedQueue(void) const {
+// RenderQueue RenderPipelineSandBox::getSupportedQueue() const {
 // 	return (RenderQueue)(Geometry | Overlay);
 // }

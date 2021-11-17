@@ -84,7 +84,7 @@ SET( SHADERZIPFILE "${SHADERZIP}.zip" )
 
 #
 ADD_EXECUTABLE(fragview ${SOURCE_FILES} ${HEADER_FILES})
-TARGET_LINK_LIBRARIES(fragview fragengine)
+TARGET_LINK_LIBRARIES(fragview fragengine fragcore-videoplayback fragcore-window-sdl )
 TARGET_INCLUDE_DIRECTORIES(fragview PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>

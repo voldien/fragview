@@ -48,8 +48,8 @@ const unsigned int fShaderType[] = {
 };
 
 // TODO relocate to fragview.
-void ShaderLoader::loadFragmentProgramPipeline(IO *fragIO, ShaderLanguage language, IRenderer *renderer,
-											   ProgramPipeline **pshader) {
+void ShaderLoader::loadFragmentShader(IO *fragIO, ShaderLanguage language, IRenderer *renderer,
+											   Shader **pshader) {
 
 	char *fragment;
 
@@ -71,19 +71,19 @@ void ShaderLoader::loadFragmentProgramPipeline(IO *fragIO, ShaderLanguage langua
 		.type = eSourceCode,
 	};
 
-	ShaderUtil::loadProgramPipeline(&shaderObjectV, &shaderObjectF, NULL, NULL, NULL, renderer, pshader);
+	ShaderUtil::loadShader(&shaderObjectV, &shaderObjectF, NULL, NULL, NULL, renderer, pshader);
 	/*  */
 	free(fragment);
 }
 
-void ShaderLoader::loadDisplayShader(IRenderer *renderer, ProgramPipeline **pProgramPipeline) {
+void ShaderLoader::loadDisplayShader(IRenderer *renderer, Shader **pShader) {
 
 	ShaderLanguage langauge = renderer->getShaderLanguage();
 
 	/*  Check if renderer is supported. */
 	if (langauge & ~(GLSL | CLC | HLSL | SPIRV))
 		throw InvalidArgumentException(
-			fvformatf("None supported language for the display shader, %s.", renderer->getName()));
+			fmt::format("None supported language for the display shader, %s.", renderer->getName()));
 
 	/*  TODO extract only one language. */
 	/*  TODO select the first valid language.   */
@@ -122,10 +122,10 @@ void ShaderLoader::loadDisplayShader(IRenderer *renderer, ProgramPipeline **pPro
 		.type = shVType,
 	};
 
-	ShaderUtil::loadProgramPipeline(&shaderObjectV, &shaderObjectF, NULL, NULL, NULL, renderer, pProgramPipeline);
+	ShaderUtil::loadShader(&shaderObjectV, &shaderObjectF, NULL, NULL, NULL, renderer, pShader);
 }
 
-void ShaderLoader::defaultUniformMap(ProgramPipeline *programPipeline) {
+void ShaderLoader::defaultUniformMap(Shader *Shader) {
 
 	/*	Texture location.   */
 	/*  TODO relocate the constants to a seperate header.    */
@@ -144,8 +144,8 @@ void ShaderLoader::defaultUniformMap(ProgramPipeline *programPipeline) {
 	/*  Iterate through each default uniforms.  */
 	DefaultTextureLocation *uniloc = (DefaultTextureLocation *)texloc;
 	while (uniloc->texname) {
-		if (programPipeline->getLocation(uniloc->texname) >= 0) {
-			programPipeline->setInt(programPipeline->getLocation(uniloc->texname), uniloc->loc);
+		if (Shader->getLocation(uniloc->texname) >= 0) {
+			Shader->setInt(Shader->getLocation(uniloc->texname), uniloc->loc);
 		}
 		uniloc++;
 	}

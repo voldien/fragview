@@ -31,7 +31,7 @@ namespace fragview {
 	*/
 	class FVDECLSPEC Config : public fragcore::IConfig {
 	public:
-		~Config(void);
+		~Config();
 
 	private:	/*	Internal methods.	*/
 
@@ -43,23 +43,23 @@ namespace fragview {
 		*/
 		virtual void parseGetOpt(int argc, const char** argv);
 
-		fragcore::IConfig *getSuperInstance(void);
+		fragcore::IConfig *getSuperInstance();
 
 		/**
 		 *	Set default configuration options
 		*	for this application.
 		*/
-		virtual void setDefaultOption(void);
+		virtual void setDefaultOption();
 
 	private:	/*	*/
 
-		Config(void);
+		Config();
 		Config(const Config& other);
 
 	public:	/*	Static factory methods.	*/
 
 		/**
-		 * 
+		 *
 		 * @param argc number of argument in argv pointer array.
 		 * @param argv string pointer array.
 		 * @param configpath path for override the default

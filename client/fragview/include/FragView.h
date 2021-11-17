@@ -18,11 +18,12 @@
 */
 #ifndef _FRAG_VIEW_H_
 #define _FRAG_VIEW_H_ 1
-#include <IRenderPipelineBase.h>
-#include <Core/Config.h>
+#include "Config.h"
+#include <Core/IConfig.h>
 #include <Core/RefPtr.h>
 #include <FileNotify.h>
 #include <IRenderer.h>
+#include <RenderPipeline/IRenderPipelineBase.h>
 #include <RendererWindow.h>
 
 namespace fragview {
@@ -34,25 +35,25 @@ namespace fragview {
 	class FVDECLSPEC FragView {
 	  public:
 		FragView(int argc, const char **argv);
-		~FragView(void);
+		~FragView();
 
 		/**
 		 * Run the application.
 		 */
-		void run(void);
+		void run();
 
 		/**
 		 * Get version of fragview program.
 		 * @return non-null terminated string.
 		 */
-		static const char *getVersion(void);
+		static const char *getVersion();
 
 	  protected:
 		void init(int argc, const char **argv);
-		void loadDefaultSceneAsset(void);
-		void cacheShaders(void);
-		void loadCachedShaders(void);
-		void loadShaders(void);
+		void loadDefaultSceneAsset();
+		void cacheShaders();
+		void loadCachedShaders();
+		void loadShaders();
 
 		/**
 		 * Create window for displaying.
@@ -61,13 +62,13 @@ namespace fragview {
 
 	  private:										 /*  */
 		fragcore::Ref<fragcore::IRenderer> renderer; /*  Low level rendering API interface.  */
-		fragcore::Ref<IRenderPipelineBase> renderpipeline;
+		fragcore::Ref<fragengine::IRenderPipelineBase> renderpipeline;
 		//    EventController* controller;
-		fragcore::Ref<fragcore::IScheduler> sch;	  /*  */
-		fragcore::Ref<fragcore::IScheduler> logicSch; /*  */
-		Config *config; /*  Current config.    */	  // TODO add suport for reference.
-		fragcore::FileNotify *notify;				  /*  Notify Asset changes.  */
-		// fragengine::Scene *scene;                             /*  Current scene.  */
+		fragcore::Ref<fragcore::IScheduler> sch;		 /*  */
+		fragcore::Ref<fragcore::IScheduler> logicSch;	 /*  */
+		Config *config; /*  Current config.    */		 // TODO add suport for reference.
+		fragcore::FileNotify *notify;					 /*  Notify Asset changes.  */
+		fragengine::Scene *scene;						 /*  Current scene.  */
 		fragcore::RendererWindow *rendererWindow;		 /*  */
 		fragcore::Ref<fragcore::IFileSystem> fileSystem; /*  */
 	};

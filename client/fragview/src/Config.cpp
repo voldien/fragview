@@ -118,19 +118,19 @@ static struct option longoptions[] = {
 	{NULL, 0, NULL, 0},
 };
 
-Config::Config(void) : fragcore::IConfig() {}
+Config::Config() : fragcore::IConfig() {}
 
 Config::Config(const Config &other) {
 	//*this = other;
 }
 
-Config::~Config(void) {
+Config::~Config() {
 	// TODO determine what needs to be done here.
 }
 
-fragcore::IConfig *Config::getSuperInstance(void) { return new Config(); }
+fragcore::IConfig *Config::getSuperInstance() { return new Config(); }
 
-void Config::setDefaultOption(void) {
+void Config::setDefaultOption() {
 
 	IConfig &global = *this;
 #if defined(_DEBUG)
@@ -146,7 +146,6 @@ void Config::setDefaultOption(void) {
 	/*	Default interfaces configuration.	*/
 	global.set("renderer-dynamicInterface",
 			   fragcore::RenderingFactory::getInterfaceLibraryPath(fragcore::RenderingFactory::OpenGL));
-	global.set<int>("SIMD", Hpm::eHPM_DEFAULT);
 
 	/*TODO determine if to relocate.    */
 	/*	Engine default configuration.	*/
@@ -333,7 +332,7 @@ void Config::parseGetOpt(int argc, const char **argv) {
 		case 'f': { /*  */
 			/*  */
 			int num = sandboxConfig.get<int>("num_shaders");
-			sandboxConfig.set<const char *>(fvformatf("shader%d", num).c_str(), optarg);
+			sandboxConfig.set<const char *>(fmt::format("shader%d", num).c_str(), optarg);
 
 			/*  Update number of textures.  */
 			num++;
@@ -343,7 +342,7 @@ void Config::parseGetOpt(int argc, const char **argv) {
 			if (optarg) {
 				/*  */
 				int num = sandboxConfig.get<int>("num_textures");
-				sandboxConfig.set<const char *>(fvformatf("texture%d", num).c_str(), optarg);
+				sandboxConfig.set<const char *>(fmt::format("texture%d", num).c_str(), optarg);
 
 				/*  Update number of textures.  */
 				num++;
@@ -355,7 +354,7 @@ void Config::parseGetOpt(int argc, const char **argv) {
 		case 'C': { /*  */
 			/*  */
 			int num = sandboxConfig.get<int>("num_compute");
-			sandboxConfig.set<const char *>(fvformatf("compute%d", num).c_str(), optarg);
+			sandboxConfig.set<const char *>(fmt::format("compute%d", num).c_str(), optarg);
 
 			/*  Update number of textures.  */
 			num++;
@@ -409,7 +408,7 @@ void Config::parseGetOpt(int argc, const char **argv) {
 											RenderingFactory::getInterfaceLibraryPath(RenderingFactory::Vulkan));
 				if (strcmp(option, "renderer-opencl") == 0)
 					this->set<const char *>("renderer-dynamicInterface",
-											RenderingFactory::getInterfaceLibraryPath(RenderingFactory::eOpenCL));
+											RenderingFactory::getInterfaceLibraryPath(RenderingFactory::OpenCL));
 				if (strcmp(option, "renderer-directx") == 0)
 					this->set<const char *>("renderer-dynamicInterface",
 											RenderingFactory::getInterfaceLibraryPath(RenderingFactory::DirectX));
@@ -436,7 +435,7 @@ Config *Config::createConfig(int argc, const char **argv, const char *configpath
 	if (configpath) {
 		/*	Check if file exists.	*/
 		if (!FileSystem::getFileSystem()->exists(configpath))
-			throw InvalidArgumentException(fvformatf("Configuration file '%s' does not exists", configpath));
+			throw InvalidArgumentException(fmt::format("Configuration file '%s' does not exists", configpath));
 	}
 	/*	Assess the parameter argument.	*/
 	if (!argv)

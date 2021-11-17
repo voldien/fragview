@@ -3,33 +3,29 @@
 #include "RenderPipeline/RenderPipelineForward.h"
 #include "RenderPipeline/RenderPipelineSettings.h"
 #include "RenderPipelineSandBox.h"
-#include "Renderer/RenderDesc.h"
-#include "Renderer/RendererFactory.h"
-#include "Renderer/ViewPort.h"
 #include "SandBoxSubScene.h"
 #include "Scene/Scene.h"
 #include "ShaderLoader.h"
 #include "UserEvent.h"
 #include <Asset/AssetHandler.h>
+#include <AudioFactory.h>
 #include <Core/IO/FileIO.h>
 #include <Core/IO/FileSystem.h>
 #include <Core/IO/ZipFileSystem.h>
 #include <Core/SystemInfo.h>
-#include <Exception/InvalidArgumentException.h>
-#include <Exception/NotSupportedException.h>
 #include <FileNotify.h>
 #include <FontFactory.h>
-#include <HpmCpp.h>
-#include <Renderer/Query.h>
+#include <Query.h>
+#include <RenderDesc.h>
+#include <RendererFactory.h>
 #include <SDL2/SDL.h>
 #include <Scene/Scene.h>
-#include <Scene/Scene.h>
 #include <Scene/SceneFactory.h>
-#include <Utils/ShaderUtil.h>
-#include <Utils/StringUtil.h>
-#include <Utils/TextureUtil.h>
-#include <Video/VideoFactory.h>
-#include <audio/AudioFactory.h>
+#include <ShaderUtil.h>
+#include <Sync.h>
+#include <TextureUtil.h>
+#include <VideoFactory.h>
+#include <ViewPort.h>
 #include <cassert>
 
 using namespace fragcore;
@@ -55,7 +51,7 @@ FragView::FragView(int argc, const char **argv) {
 	}
 }
 
-FragView::~FragView(void) {
+FragView::~FragView() {
 
 	const IConfig &resourceConfig = this->config->getSubConfig("resource-settings");
 	if (this->config && resourceConfig.get<bool>("save-configuration")) {
@@ -117,12 +113,7 @@ void FragView::init(int argc, const char **argv) {
 	/*	TODO determine how much shall be handle by the window manager once supported.	*/
 	status = SDL_Init(SDL_INIT_EVENTS | SDL_INIT_TIMER);
 	if (status != 0)
-		throw RuntimeException(fvformatf("failed to initialize SDL library : %d - %s", status, SDL_GetError()));
-
-	/*  Initialize HPM.  */
-	if (!Hpm::init((Hpm::HPMSIMD)this->config->get<int>("SIMD")))
-		throw RuntimeException("Failed to initialize the hpm library.");
-	Log::log(Log::Verbose, "HPM SIMD using: %s\n", hpm_get_simd_symbol(hpm_get_simd()));
+		throw RuntimeException(fmt::format("failed to initialize SDL library : %d - %s", status, SDL_GetError()));
 
 	/*  Create rendering interface. */
 	const IConfig &renderConfig = config->getSubConfig("render-driver");
@@ -131,7 +122,7 @@ void FragView::init(int argc, const char **argv) {
 	Log::log(Log::Verbose, "Loading Renderer: %s-%s\n", (*this->renderer)->getName().c_str(),
 			 (*this->renderer)->getVersion());
 	Log::log(Log::Verbose, "API Internal API version: %s\n", (*this->renderer)->getAPIVersion());
-	(*this->renderer)->setVSync(renderConfig.get<bool>("v-sync"));
+	this->rendererWindow->vsync(renderConfig.get<bool>("v-sync"));
 
 	/*  Create file notify.    */
 	if (this->config->get<bool>("notify-file"))
@@ -143,7 +134,7 @@ void FragView::init(int argc, const char **argv) {
 					   windowConfig.get<int>("screen-width"), windowConfig.get<int>("screen-height"));
 }
 
-void FragView::loadDefaultSceneAsset(void) {
+void FragView::loadDefaultSceneAsset() {
 	/*	*/
 	Capability capability;
 	(*this->renderer)->getCapability(&capability);
@@ -156,7 +147,7 @@ void FragView::loadDefaultSceneAsset(void) {
 	/*  Display information.    */
 	Display::DPI dpi;
 	this->rendererWindow->getCurrentDisplay()->getDPI(&dpi);
-	TextureFormat format = this->rendererWindow->getCurrentDisplay()->getFormat();
+	// TextureFormat format = this->rendererWindow->getCurrentDisplay()->getFormat();
 
 	ZipFileSystem *internalAsset = NULL;
 	Ref<IO> internal_zip_io;
@@ -165,7 +156,7 @@ void FragView::loadDefaultSceneAsset(void) {
 	const char *internal_asset_filename = resourceConfig.get<const char *>("fragview-internal-shaders-files");
 	Log::log(Log::Verbose, "Reading asset file: %s\n", internal_asset_filename);
 	const char *apppath =
-		fvformatf("%s/%s", resourceConfig.get<const char *>("shaddir"), internal_asset_filename).c_str();
+		fmt::format("%s/%s", resourceConfig.get<const char *>("shaddir"), internal_asset_filename).c_str();
 	std::string fullPath = FileSystem::getAbsolutePath(apppath);
 	if (FileSystem::getFileSystem()->exists(internal_asset_filename))
 		internal_zip_io = Ref<IO>(FileSystem::getFileSystem()->openFile(internal_asset_filename, IO::READ));
@@ -173,7 +164,7 @@ void FragView::loadDefaultSceneAsset(void) {
 		internal_zip_io = Ref<IO>(FileSystem::getFileSystem()->openFile(fullPath.c_str(), IO::READ));
 	else
 		throw RuntimeException(
-			fvformatf("Could not find internal resources for default shaders : %s", internal_asset_filename));
+			fmt::format("Could not find internal resources for default shaders : %s", internal_asset_filename));
 	internalAsset = ZipFileSystem::createZipFileObject(internal_zip_io, this->sch);
 
 	// TODO add support.
@@ -229,14 +220,14 @@ void FragView::loadDefaultSceneAsset(void) {
 		bool internalShaderNotLoaded = false;
 		const char *cache_directory = resourceConfig.get<const char *>("cache-directory");
 		// TODO determine if directory or filepath.
-		std::string shader_cache_filepath = fvformatf("%s/shader-cache.json", cache_directory);
+		std::string shader_cache_filepath = fmt::format("%s/shader-cache.json", cache_directory);
 		if (this->config->get<bool>("use-cache-shaders")) {
 			IConfig shaderCache;
 			try {
 				// TODO
 				// shaderCache.parseConfigFile(Ref<IO>(NULL), IConfig::JSON);
 				internalShaderNotLoaded = true;
-			} catch (const IException &ex) {
+			} catch (const std::exception &ex) {
 				internalShaderNotLoaded = false;
 			}
 		}
@@ -253,7 +244,7 @@ void FragView::loadDefaultSceneAsset(void) {
 				displayFragV = internalAsset->openASyncFile("shaders/spirv/displayV.spv", IO::READ);
 				displayFragF = internalAsset->openASyncFile("shaders/spirv/displayF.spv", IO::READ);
 			} else
-				throw NotSupportedException(fvformatf("Non-Supported shader for language %d", supportedLanguages));
+				throw NotSupportedException(fmt::format("Non-Supported shader for language %d", supportedLanguages));
 
 			/*  Invoke async load.  */
 			internalAsset->asyncWriteFile(displayFragV, NULL, 0, NULL);
@@ -270,18 +261,18 @@ void FragView::loadDefaultSceneAsset(void) {
 		/*  Create shaders. */
 		const int nShadersInSandBox = sandboxConfig.get<int>("num_shaders");
 		for (int i = 0; i < sandboxConfig.get<int>("num_shaders"); i++) {
-			ProgramPipeline *shader;
+			Shader *shader;
 
 			/*  Check if fragment shader is supported.  */
 			if (!capability.sFragmentShader)
 				throw RuntimeException(
-					fvformatf("Fragment shader is not support for %s\n", (*this->renderer)->getName()));
+					fmt::format("Fragment shader is not support for %s\n", (*this->renderer)->getName()));
 
-			std::string path = sandboxConfig.get<std::string>(fvformatf("shader%d", i)).c_str();
-			IO *ref = FileSystem::getFileSystem()->openFile(path.c_str(), IO::Mode::READ);
+			std::string path = sandboxConfig.get<std::string>(fmt::format("shader%d", i)).c_str();
+			IO *ref = FileSystem::getFileSystem()->openFile(path.c_str(), IO::IOMode::READ);
 
 			/*  Load fragment program.  */
-			ShaderLoader::loadFragmentProgramPipeline(ref, GLSL, (*this->renderer), &shader);
+			ShaderLoader::loadFragmentShader(ref, GLSL, (*this->renderer), &shader);
 			// scene->getGLSLSandBoxScene()->addShader(shader);
 			Log::log(Log::Verbose, "Loaded Shader: %s\n", path.c_str());
 
@@ -293,15 +284,15 @@ void FragView::loadDefaultSceneAsset(void) {
 		/*  Create compute shaders.    */
 		const int nComputeInSandBox = sandboxConfig.get<int>("num_compute");
 		for (int i = 0; i < sandboxConfig.get<int>("num_compute"); i++) {
-			ProgramPipeline *compute;
+			Shader *compute;
 
 			/*  Check if compute shader is supported.  */
-			std::string path = sandboxConfig.get<std::string>(fvformatf("compute%d", i)).c_str();
+			std::string path = sandboxConfig.get<std::string>(fmt::format("compute%d", i)).c_str();
 			if (!capability.sComputeShader)
 				throw RuntimeException(
-					fvformatf("Compute shader is not support for %s\n", (*this->renderer)->getName()));
+					fmt::format("Compute shader is not support for %s\n", (*this->renderer)->getName()));
 
-			IO *ref = FileSystem::getFileSystem()->openFile(path.c_str(), IO::Mode::READ);
+			IO *ref = FileSystem::getFileSystem()->openFile(path.c_str(), IO::IOMode::READ);
 			/*  */
 			// ShaderUtil::loadComputeShader(ref, *this->renderer, &compute);
 			// scene->getGLSLSandBoxScene()->addCompute(compute);
@@ -318,7 +309,7 @@ void FragView::loadDefaultSceneAsset(void) {
 		for (int i = 0; i < capability.sMaxTextureUnitActive; i++) {
 			Texture *texture;
 			const char *path = NULL;
-			const std::string tex_key = fvformatf("texture%d", i);
+			const std::string tex_key = fmt::format("texture%d", i);
 			if (sandboxConfig.isSet(tex_key.c_str())) {
 				path = sandboxConfig.get<const char *>(tex_key);
 				if (path) {
@@ -351,7 +342,8 @@ void FragView::loadDefaultSceneAsset(void) {
 			IConfig internaCache;
 			internaCache.setName("shader-cache");
 			for (int i = 0; i < sandBoxSubScene->getNumShaders(); i++) {
-				Shader *shader = sandBoxSubScene->getShader(i)->getShader(ProgramPipeline::VERTEX_SHADER);
+				Shader *shader = sandBoxSubScene->getShader(i);
+				//->getShader(Shader::VERTEX_SHADER);
 
 				IConfig &shaderCache = internaCache.getSubConfig(shader->getName());
 				long int bsize;
@@ -392,9 +384,9 @@ void FragView::loadDefaultSceneAsset(void) {
 	loadShaders();
 	cacheShaders();
 }
-void FragView::cacheShaders(void) {}
-void FragView::loadCachedShaders(void) {}
-void FragView::loadShaders(void) {}
+void FragView::cacheShaders() {}
+void FragView::loadCachedShaders() {}
+void FragView::loadShaders() {}
 
 void FragView::createWindow(int x, int y, int width, int height) {
 	assert(*this->renderer);
@@ -415,7 +407,7 @@ void FragView::createWindow(int x, int y, int width, int height) {
 	} else {
 		// TODO determine based on platform for which directory to search.
 		/*  Share directory.    */
-		iconpath = fvformatf("%s/%s", resourceConfig.get<const char *>("shaddir"), iconFileName);
+		iconpath = fmt::format("%s/%s", resourceConfig.get<const char *>("shaddir"), iconFileName);
 		if (fileSystem->exists(iconpath.c_str())) {
 			foundIcon = true;
 		}
@@ -455,8 +447,8 @@ void FragView::createWindow(int x, int y, int width, int height) {
 	(*this->renderer)->getView(0)->setDimensions(0, 0, width, height);
 
 	/*  Set current window title.   */
-	std::string title = fvformatf("FragView - %s : %s - %s", FragView::getVersion(),
-								  (*this->renderer)->getName().c_str(), (*this->renderer)->getAPIVersion());
+	std::string title = fmt::format("FragView - %s : %s - %s", FragView::getVersion(),
+									(*this->renderer)->getName().c_str(), (*this->renderer)->getAPIVersion());
 	this->rendererWindow->setTitle(title.c_str());
 
 	/*  Set window properties.  */
@@ -482,7 +474,7 @@ void FragView::createWindow(int x, int y, int width, int height) {
 		try {
 			// TODO extract IO status.
 			fileSystem->asyncWait(iconHandle);
-			ASync::IOStatus status = fileSystem->getIOStatus(iconHandle);
+			ASyncIO::IOStatus status = fileSystem->getIOStatus(iconHandle);
 			fileSystem->asyncClose(iconHandle);
 
 			void *icon = TextureUtil::loadTextureData(iconBuffer, status.nbytes, &iconw, &iconh);
@@ -502,7 +494,7 @@ void FragView::createWindow(int x, int y, int width, int height) {
 	this->rendererWindow->show();
 }
 
-void FragView::run(void) {
+void FragView::run() {
 	SDL_Event event = {};
 
 	/*	*/
@@ -585,7 +577,7 @@ void FragView::run(void) {
 				} else if (event.key.keysym.sym == SDLK_F12) {
 					/* Save current framebuffer.  */
 					FrameBuffer *def = (*this->renderer)->getDefaultFramebuffer(this->rendererWindow);
-					TextureUtil::saveTexture(fvformatf("screen - %s.png", Time::getDate()).c_str(), *this->renderer,
+					TextureUtil::saveTexture(fmt::format("screen - %s.png", Time::getDate()).c_str(), *this->renderer,
 											 def->getAttachment(0));
 
 				} else {
@@ -672,9 +664,9 @@ void FragView::run(void) {
 			/*  Draw debug. */
 
 			/*  Swap buffer.    */
-			(*this->renderer)->swapBuffer();
+			this->rendererWindow->swapBuffer();
 		}
 	}
 }
 
-const char *FragView::getVersion(void) { return FV_VERSION; }
+const char *FragView::getVersion() { return FV_VERSION; }

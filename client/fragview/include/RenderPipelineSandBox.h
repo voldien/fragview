@@ -19,42 +19,44 @@
 #ifndef _FRAGVIEW_RENDERPIPELINE_SANDBOX_H_
 #define _FRAGVIEW_RENDERPIPELINE_SANDBOX_H_ 1
 #include <FragCore.h>
-#include<Node.h>
+
 #include <RenderPipeline/IRenderPipelineBase.h>
 
 namespace fragview {
 	using namespace fragcore;
-
+	using namespace fragengine;
 	/**
 	 * @brief
 	 *
 	 */
-	class FVDECLSPEC RenderPipelineSandBox : public IRenderPipelineBase {
+	class FVDECLSPEC RenderPipelineSandBox : public fragengine::IRenderPipelineBase {
 	  public:
 		RenderPipelineSandBox(Ref<IRenderer> &renderer);
 
-		virtual ~RenderPipelineSandBox(void);
+		virtual ~RenderPipelineSandBox();
 
-		void setRenderer(Ref<IRenderer> &renderer) override;
+		virtual void setRenderer(Ref<IRenderer> &renderer) override;
 
-		const Ref<IRenderer> &getRenderer(void) const override;
+		virtual const Ref<IRenderer> &getRenderer() const override;
 
-		Ref<IRenderer> getRenderer(void) override;
+		virtual Ref<IRenderer> getRenderer() override;
 
-		void setViewport(int width, int height, IRenderer *render) override;
+		virtual void setViewport(int width, int height, IRenderer *render) override;
 
-		virtual void draw(Node *scene, FrameBuffer *frame, IRenderer *render) override;
+		virtual void draw(Scene *scene, FrameBuffer *frame, IRenderer *render) override;
+
+		virtual RenderQueue getSupportedQueue() const override;
 
 	  protected:
 		virtual void createFrameTexture(IRenderer *renderer, unsigned int width, unsigned height);
 
 		virtual void init(Ref<IRenderer> &renderer, const IConfig *config);
-		// virtual void updateUniform(void);
+		// virtual void updateUniform();
 
 	  private:
-		//Ref<Geometry> quadDisplay;
+		// Ref<Geometry> quadDisplay;
 		Ref<Buffer> quadDisplayIndirect;
-		Ref<ProgramPipeline> displayShader;
+		Ref<Shader> displayShader;
 
 		/*  Compute shader objects. */
 		Ref<Texture> compute;

@@ -16,13 +16,13 @@ namespace fragview {
 		} DefaultTextureLocation; // TODO relocate to to the engine.
 
 		// TODO relocate to the engine.
-		static void defaultUniformMap(ProgramPipeline *programPipeline);
+		static void defaultUniformMap(Shader *Shader);
 		// TODO relocate to be part of the zip!
-		static void loadDisplayShader(IRenderer *renderer, ProgramPipeline **pProgramPipeline);
+		static void loadDisplayShader(IRenderer *renderer, Shader **pShader);
 
 		// TODO relocate and .
-		static void loadFragmentProgramPipeline(IO *fragIO, ShaderLanguage language, IRenderer *renderer,
-												ProgramPipeline **pshader);
+		static void loadFragmentShader(IO *fragIO, ShaderLanguage language, IRenderer *renderer,
+												Shader **pshader);
 	};
 } // namespace fragview
 
