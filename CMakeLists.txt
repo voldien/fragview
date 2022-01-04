@@ -1,12 +1,10 @@
 CMAKE_MINIMUM_REQUIRED( VERSION 3.11.0)
 PROJECT(fragview)
-
 #
 OPTION(FRAGVIEW_BUILD_WITH_SANITY_CHECK "" ON)
 OPTION(FRAGVIEW_BUILD_WITH_COVERAGE "Enable profiling and coverage report analysis." ON)
 OPTION(FRAGVIEW_BUILD_WITH_PROFILER "Enable profiling." ON)
 OPTION(FRAGVIEW_BUILD_WITH_EXTERNAL_PROJECT "Enable external project build." ON)
-OPTION(FRAGVIEW_BUILD_WITH_INSTALL "." ON )
 OPTION(FRAGVIEW_BUILD_WITH_TEST "" ON)
 
 # Set version of the project.
@@ -16,43 +14,15 @@ SET(VERSION_REVISION 0)
 SET(VERSION_STATE a)
 SET(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}${VERSION_STATE}${VERSION_REVISION} )
 SET(PROJECT_VERSION "${VERSION}")
-ADD_DEFINITIONS(-DFV_VERSION="${VERSION}")
+ADD_DEFINITIONS(-DFRAG_VIEW_VERSION="${VERSION}")
 
-# Find packages.
-FIND_PACKAGE(Git QUIET)
-SET(FRAGENGINE_SUBMODULE_PATH ${PROJECT_SOURCE_DIR}/extern/repo/fragengine)
-IF(GIT_FOUND AND EXISTS "${PROJECT_SOURCE_DIR}/.git")
-	# Update submodules as needed
-	OPTION(GIT_SUBMODULE "Check submodules during build" OFF)
-	IF(GIT_SUBMODULE)
-		FILE(MAKE_DIRECTORY ${PROJECT_SOURCE_DIR}/extern/repo/fragengine)
-		MESSAGE(STATUS "Submodule update  --recursive")
-		IF(NOT GIT_SUBMOD_RESULT EQUAL "0")
-#			MESSAGE(FATAL_ERROR "git submodule update --init failed with ${GIT_SUBMOD_RESULT}, please checkout submodules")
-		ENDIF()
-	ENDIF()
-	
-	#TODO determine if can be done auto.
-	#SET(FRAG_CORE_INCLUDE "${PROJECT_SOURCE_DIR}/extern/repo/fragengine/frag-core/include")
-	#SET(FRAG_ENGINE_INCLUDE "${PROJECT_SOURCE_DIR}/extern/repo/fragengine/frag-engine/include")
-#	
-ELSE()
-
-ENDIF()
-
-IF(NOT EXISTS "${PROJECT_SOURCE_DIR}/extern/repo/fragengine")
-#	MESSAGE(FATAL_ERROR "The submodules were not downloaded! GIT_SUBMODULE was turned off or failed. Please update submodules and try again.")
-ENDIF()
-
-ADD_SUBDIRECTORY(${PROJECT_SOURCE_DIR}/extern/repo/fragengine EXCLUDE_FROM_ALL)
-
+ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/extern/repo/fragengine EXCLUDE_FROM_ALL)
 ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/client)
 
 IF(FRAGVIEW_BUILD_WITH_TEST)
 	ENABLE_TESTING()
 	ADD_SUBDIRECTORY(${CMAKE_CURRENT_SOURCE_DIR}/test)
 ENDIF(FRAGVIEW_BUILD_WITH_TEST)
-
 
 #
 FILE(GLOB SAMPLE_GLSL_FILES ${CMAKE_CURRENT_SOURCE_DIR}/samples/glsl/* )
